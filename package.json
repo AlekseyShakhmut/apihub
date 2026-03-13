@@ -6,7 +6,8 @@
     "test": "npx playwright test",
     "test:headed": "npx playwright test --headed",
     "test:debug": "npx playwright test --debug",
-    "report": "npx playwright show-report"
+    "report": "npx playwright show-report",
+    "allure:report": "allure generate allure-results -o allure-report --clean && allure open allure-report"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
