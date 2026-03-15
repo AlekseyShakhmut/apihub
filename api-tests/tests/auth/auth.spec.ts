@@ -46,4 +46,11 @@ test.describe('Регистрация и авторизация', () => {
         expect(userData.data.email).toBe(user.email);
         console.log(`👤 Получены данные пользователя: ${userData.data.email}`);
     });
+    // test('GET /current-user без токена - ожидаем 401', async ({ request }) => {
+    //     // Просто запрос без заголовка Authorization и проверка, что эндпоинт защищен
+    //     const response = await request.get('/api/v1/users/current-user');
+    //
+    //     console.log('📡 Статус без токена:', response.status());
+    //     expect(response.status()).toBe(401);
+    // });
 });

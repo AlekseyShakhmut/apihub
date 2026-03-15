@@ -28,6 +28,7 @@ api-tests/
 │ └── products.parametrized.spec.ts # Параметризованные тесты цен
 ├── 📁 utils/ # Вспомогательные модули
 │ ├── data_generator.ts # Генерация тестовых данных
+│ ├── form_data_helper.ts # Построитель FormData для multipart
 │ ├── image_helper.ts # Работа с изображениями
 │ └── schemas.ts # JSON Schema для валидации
 ├── 📁 test-data/ # Тестовые изображения

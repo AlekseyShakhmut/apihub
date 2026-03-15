@@ -1,11 +1,12 @@
 // tests/products/products.negative.spec.ts
 import { test, expect } from '../../fixtures/auth_context';  // для тестов с токеном
 import { faker } from '@faker-js/faker';
+import {createBaseProductFormData} from "../../utils/form_data_helper";
 
 test.describe('Негативные тесты для продуктов', () => {
 
     test('GET /products/{id} с несуществующим ID - ожидаем 404', async ({ request }) => {
-        const invalidId = "000000000000000000000000";  // несуществующий MongoDB ID
+        const invalidId = "000000000000000000000000";  // несуществующий ID
 
         const response = await request.get(`/api/v1/ecommerce/products/${invalidId}`);
 
@@ -48,12 +49,9 @@ test.describe('Негативные тесты для продуктов', () =>
     });
 
     test('POST /products с неверной price - ожидаем 422', async ({ request, authToken }) => {
-        const formData = new FormData();
-        formData.append('category', '649865ab297b287175aec1d7');  // ✅ корректно
-        formData.append('description', 'New description number 2'); // ✅ корректно
-        formData.append('name', 'Kids product');  // ✅ корректно
-        formData.append('price', 'сто');  // ❌ не число
-        formData.append('stock', '30');  // ✅ корректно
+        const formData = createBaseProductFormData('649865ab297b287175aec1d7')
+        formData.append('price', 'сто');
+
 
         const response = await request.post('/api/v1/ecommerce/products', {
             multipart: formData,

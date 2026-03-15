@@ -2,6 +2,7 @@ import { test, expect } from '../../fixtures/auth_context';
 import {generateCategory, generateNewPrice, generateProduct} from '../../utils/data_generator';
 import { faker } from '@faker-js/faker';
 import { createImageBlob } from '../../utils/image_helper';
+import {createProductFormData} from '../../utils/form_data_helper';
 
 test.describe.serial('CRUD операции', () => {
     let categoryId: string;
@@ -45,16 +46,12 @@ test.describe.serial('CRUD операции', () => {
         const productData = generateProduct(categoryId);
 
         // 2. Формируем multipart запрос с данными и изображениями
-        const formData = new FormData();
-        formData.append('name', productData.name);
-        formData.append('description', productData.description);
-        formData.append('price', productData.price);
-        formData.append('stock', productData.stock);
-        formData.append('category', productData.category);
-        formData.append('mainImage', createImageBlob('main.jpg'), 'main.jpg');
-        formData.append('subImages', createImageBlob('sub1.jpeg'), 'sub1.jpeg');
-        formData.append('subImages', createImageBlob('sub2.jpg'), 'sub2.jpg');
-        formData.append('subImages', createImageBlob('sub3.jpg'), 'sub3.jpg');
+        const formData = createProductFormData({
+            ...productData,
+            category: categoryId,
+            mainImage: 'main.jpg',
+            subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
+        });
 
         // 3. Отправляем запрос на создание продукта
         const productResponse = await request.post('/api/v1/ecommerce/products', {
@@ -68,6 +65,9 @@ test.describe.serial('CRUD операции', () => {
 
         expect(productBody).toHaveProperty('data');
         expect(productBody.data).toHaveProperty('_id');
+
+        expect(productBody.data._id).toBeDefined();
+        expect(productBody.data._id).not.toBeNull();
 
         productId = productBody.data._id;
         productName = productBody.data.name;

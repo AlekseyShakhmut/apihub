@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { generateCategory, generateProduct } from '../../utils/data_generator';
 import { createImageBlob } from '../../utils/image_helper';
+import {createProductFormData} from '../../utils/form_data_helper';
 
 test.describe('Параметризованные тесты для цены продукта', () => {
     let categoryId: string;
@@ -57,16 +58,15 @@ test.describe('Параметризованные тесты для цены п�
             // Создаем продукт с тестовой ценой
             const productData = generateProduct(categoryId);
 
-            const formData = new FormData();
-            formData.append('name', productData.name);
-            formData.append('description', productData.description);
-            formData.append('price', price.toString());  // ← граничное значение
-            formData.append('stock', productData.stock);
-            formData.append('category', categoryId);
-            formData.append('mainImage', createImageBlob('main.jpg'), 'main.jpg');
-            formData.append('subImages', createImageBlob('sub1.jpeg'), 'sub1.jpeg');
-            // formData.append('subImages', createImageBlob('sub2.jpg'), 'sub2.jpg');
-            // formData.append('subImages', createImageBlob('sub3.jpg'), 'sub3.jpg');
+            const formData = createProductFormData({
+                name: productData.name,
+                description: productData.description,
+                price: price.toString(),
+                stock: productData.stock,
+                category: categoryId,
+                mainImage: 'main.jpg',
+                subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
+            });
 
             const response = await request.post('/api/v1/ecommerce/products', {
                 multipart: formData,
