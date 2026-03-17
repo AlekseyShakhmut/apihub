@@ -48,5 +48,4 @@ export const test = base.extend<AuthFixtures>({
         await use(token);
     }
 });
-
-export { expect } from '@playwright/test';
+export {expect} from "@playwright/test";

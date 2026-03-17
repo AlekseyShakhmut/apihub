@@ -13,14 +13,13 @@ test.describe('JSON Schema валидация', () => {
     let categoryId: string;
 
     test.beforeAll(async ({ request, authToken }) => {
-        // ✅ Создаем категорию один раз для всех тестов (если их будет несколько)
+        // Создаем категорию один раз для всех тестов (если их будет несколько)
         const categoryData = generateCategory();
         const categoryRes = await request.post('/api/v1/ecommerce/categories', {
             data: categoryData,
             headers: { Authorization: `Bearer ${authToken}` }
         });
         categoryId = (await categoryRes.json()).data._id;
-        console.log(`📁 Категория создана: ${categoryId}`);
     });
 
     test('GET /products/{id} должен соответствовать схеме', async ({ request, authToken }) => {
@@ -29,7 +28,6 @@ test.describe('JSON Schema валидация', () => {
 
         const formData = createProductFormData({
             ...productData,
-            category: categoryId,
             mainImage: 'main.jpg',
             subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
         });
@@ -52,7 +50,12 @@ test.describe('JSON Schema валидация', () => {
         const validate = ajv.compile(productSchema);
         const valid = validate(receivedProduct);
 
+        // if (!valid) {
+        //     console.log('Ошибки валидации схемы:');
+        //     console.log(JSON.stringify(validate.errors, null, 2));
+        //     console.log('Полученный объект:', JSON.stringify(receivedProduct, null, 2));
+        // }
+
         expect(valid).toBe(true);
-        console.log('✅ Схема продукта валидна');
     });
 });

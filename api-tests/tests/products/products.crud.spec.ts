@@ -12,7 +12,7 @@ test.describe.serial('CRUD операции', () => {
     let originalPrice: number;
     let newPrice: number;
 
-    // ✅ Подготовка данных перед всеми тестами
+    // Подготовка данных перед всеми тестами
     test.beforeAll(async ({ request }) => {
         // 1. Создаем нового пользователя (админа) для всех CRUD операций
         const user = {
@@ -37,10 +37,9 @@ test.describe.serial('CRUD операции', () => {
         expect(categoryResponse.status()).toBe(201);
         categoryId = (await categoryResponse.json()).data._id;
 
-        console.log(`✅ Подготовка: один пользователь и категория ${categoryId}`);
     });
 
-    // 🔵 ТЕСТ 1: CREATE — создание продукта
+    // CREATE — создание продукта
     test('Создание продукта', async ({ request }) => {
         // 1. Генерируем данные продукта
         const productData = generateProduct(categoryId);
@@ -48,7 +47,6 @@ test.describe.serial('CRUD операции', () => {
         // 2. Формируем multipart запрос с данными и изображениями
         const formData = createProductFormData({
             ...productData,
-            category: categoryId,
             mainImage: 'main.jpg',
             subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
         });
@@ -72,13 +70,9 @@ test.describe.serial('CRUD операции', () => {
         productId = productBody.data._id;
         productName = productBody.data.name;
         originalPrice = productBody.data.price;
-
-        console.log(`📁 Создан продукт с ID: ${productId}`);
-        console.log(`📦 Название: ${productName}`);
-        console.log(`💰 Цена: ${originalPrice}`);
     });
 
-    // 🔵 ТЕСТ 2: READ — проверка чтения продукта по ID
+    // READ — проверка чтения продукта по ID
     test('Получение продукта по ID и проверка названия', async ({ request }) => {
         // 1. Запрашиваем созданный продукт
         const response = await request.get(`/api/v1/ecommerce/products/${productId}`)
@@ -86,13 +80,10 @@ test.describe.serial('CRUD операции', () => {
 
         // 2. Сравниваем название с сохраненным при создании
         const productBody = await response.json();
-        console.log('🔍 Сравнение названий:');
-        console.log(`   Ожидали: ${productName}`);
-        console.log(`   Получили: ${productBody.data.name}`);
         expect(productBody.data.name).toBe(productName);
     });
 
-    // 🔵 ТЕСТ 3: UPDATE — обновление цены продукта
+    // UPDATE — обновление цены продукта
     test('Обновление цены у продукта', async ({ request }) => {
         // 1. Генерируем новую цену
         const responseNewPrice = generateNewPrice();
@@ -110,7 +101,6 @@ test.describe.serial('CRUD операции', () => {
         expect(responseUpdate.status()).toBe(200);
         const productBody = await responseUpdate.json();
         newPrice = productBody.data.price;
-        console.log(`🔄 Новая цена продукта: ${newPrice}`);
 
         // 3. Проверяем, что цена действительно обновилась
         const response = await request.get(`/api/v1/ecommerce/products/${productId}`)
@@ -120,7 +110,7 @@ test.describe.serial('CRUD операции', () => {
         expect(productResponse.data.price).not.toBe(originalPrice);
     });
 
-    // 🔵 ТЕСТ 4: DELETE — удаление продукта
+    // DELETE — удаление продукта
     test('Удаление продукта и проверка статуса 200/204', async ({ request }) => {
         // 1. Отправляем запрос на удаление
         const response = await request.delete(`/api/v1/ecommerce/products/${productId}`,{
@@ -130,6 +120,5 @@ test.describe.serial('CRUD операции', () => {
         // 2. Проверяем, что статус соответствует ожидаемому (200 или 204)
         expect([200, 204]).toContain(response.status());
 
-        console.log(`✅ Продукт ${productId} удален, статус: ${response.status()}`);
     });
 });

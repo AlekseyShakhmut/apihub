@@ -18,7 +18,7 @@ export default defineConfig({
   use: {
     baseURL: 'https://api.freeapi.app',
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    // screenshot: 'only-on-failure',
     extraHTTPHeaders: {
       'accept': 'application/json',
     },

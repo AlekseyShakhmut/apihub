@@ -11,7 +11,6 @@ test.describe('Негативные тесты для продуктов', () =>
         const response = await request.get(`/api/v1/ecommerce/products/${invalidId}`);
 
         expect(response.status()).toBe(404);
-        console.log(`✅ 404 получен для несуществующего ID: ${invalidId}`);
     });
 
     test('POST /products без авторизации - ожидаем 401', async ({ request }) => {
@@ -22,11 +21,10 @@ test.describe('Негативные тесты для продуктов', () =>
 
         const response = await request.post('/api/v1/ecommerce/products', {
             data: productData
-            // ❌ Без Authorization header
+            // Без Authorization header
         });
 
         expect(response.status()).toBe(401);
-        console.log('✅ 401 получен для запроса без токена');
     });
 
     test('POST /products с неверным Content-Type - ожидаем 400', async ({ request, authToken }) => {
@@ -45,7 +43,6 @@ test.describe('Негативные тесты для продуктов', () =>
         });
 
         expect(response.status()).toBe(400);
-        console.log('✅ 400 получен для неверной схемы данных');
     });
 
     test('POST /products с неверной price - ожидаем 422', async ({ request, authToken }) => {
@@ -64,8 +61,5 @@ test.describe('Негативные тесты для продуктов', () =>
         // Проверяем, что в errors только одна ошибка о price
         expect(errorBody.errors.length).toBe(1);
         expect(errorBody.errors[0].price).toBe('Price must be a number');
-
-        console.log('✅ 422 получен только для поля price');
     });
-
 });

@@ -1,6 +1,6 @@
 export const productSchema = {
     type: 'object',
-    required: ['_id', 'name', 'price', 'category', 'createdAt'],
+    required: ['_id', 'name', 'price','stock', 'category','mainImage','subImages', 'createdAt'],
     properties: {
         _id: { type: 'string' },
         name: { type: 'string' },

@@ -15,7 +15,9 @@ test.describe('Получение списка случайных продукт
 
         // Запрашиваем ВСЕ продукты
         const response = await request.get('api/v1/public/randomproducts', {
-            params: { limit: totalItems }
+            params: {
+                limit: totalItems
+            }
         });
 
         // Проверяем статус
@@ -29,6 +31,5 @@ test.describe('Получение списка случайных продукт
 
         // Сохраняем в файл
         fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(productsArray, null, 2));
-        console.log(`✅ Сохранено ${productsArray.length} продуктов`);
     });
 });
