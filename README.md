@@ -67,8 +67,8 @@ api-tests/
 
 ### 1. Клонировать репозиторий
 ```bash
-git clone <https://github.com/AlekseyShakhmut/alfa_apihub.git>
-cd alfa_apihub
+git clone <https://github.com/AlekseyShakhmut/apihub.git>
+cd apihub
 
 2.Установить зависимости
     npm install
