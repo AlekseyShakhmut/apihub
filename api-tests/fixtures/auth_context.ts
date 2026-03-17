@@ -1,5 +1,13 @@
 import { test as base, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
+import * as dotenv from 'dotenv';
+dotenv.config({debug: false, quiet: true});
+
+
+const ADMIN_USER_PASSWORD = process.env.ADMIN_USER_PASSWORD;
+if (!ADMIN_USER_PASSWORD) {
+    throw new Error('ADMIN_USER_PASSWORD не задан в .env файле');
+}
 
 // Тип для фикстуры
 type AuthFixtures = {
@@ -17,7 +25,7 @@ export const test = base.extend<AuthFixtures>({
     testUser: async ({}, use) => {
         const user = {
             email: faker.internet.email(),
-            password: faker.internet.password() + "A1!",
+            password: ADMIN_USER_PASSWORD,
             role: "ADMIN",
             username: faker.internet.userName().toLowerCase(),
         };

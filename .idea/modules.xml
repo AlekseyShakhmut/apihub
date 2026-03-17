@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/alfa_apihub.iml" filepath="$PROJECT_DIR$/.idea/alfa_apihub.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/apihub.iml" filepath="$PROJECT_DIR$/.idea/apihub.iml" />
     </modules>
   </component>
 </project>

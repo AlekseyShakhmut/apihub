@@ -3,6 +3,8 @@ import {generateCategory, generateNewPrice, generateProduct} from '../../utils/d
 import { faker } from '@faker-js/faker';
 import { createImageBlob } from '../../utils/image_helper';
 import {createProductFormData} from '../../utils/form_data_helper';
+import * as dotenv from 'dotenv';
+dotenv.config({debug: false, quiet: true});
 
 test.describe.serial('CRUD операции', () => {
     let categoryId: string;
@@ -12,12 +14,17 @@ test.describe.serial('CRUD операции', () => {
     let originalPrice: number;
     let newPrice: number;
 
+    const ADMIN_USER_PASSWORD = process.env.ADMIN_USER_PASSWORD;
+    if (!ADMIN_USER_PASSWORD) {
+        throw new Error('ADMIN_USER_PASSWORD не задан в .env файле');
+    }
+
     // Подготовка данных перед всеми тестами
     test.beforeAll(async ({ request }) => {
         // 1. Создаем нового пользователя (админа) для всех CRUD операций
         const user = {
             email: faker.internet.email(),
-            password: faker.internet.password() + "A1!", // генерируем безопасный пароль
+            password: ADMIN_USER_PASSWORD,
             role: "ADMIN",
             username: faker.internet.userName().toLowerCase()
         };
@@ -119,6 +126,11 @@ test.describe.serial('CRUD операции', () => {
 
         // 2. Проверяем, что статус соответствует ожидаемому (200 или 204)
         expect([200, 204]).toContain(response.status());
-
     });
+    test('Проверка, что продукт успешно удален', async ({ request }) => {
+        const response = await request.get(`ecommerce/products/${productId}`,{
+            headers: { Authorization: `Bearer ${authToken}` },
+        })
+        expect (response.status()).toBe(404);
+    })
 });

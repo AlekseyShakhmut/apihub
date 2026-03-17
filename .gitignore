@@ -14,13 +14,14 @@ allure-report/
 playwright-report/
 test-results/
 
-# Environment files
-.env
-.env.local
-
 # IDE settings
 .idea/
 .vscode/
 
 # macOS system files
 .DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
