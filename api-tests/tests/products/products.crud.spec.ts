@@ -132,5 +132,9 @@ test.describe.serial('CRUD операции', () => {
             headers: { Authorization: `Bearer ${authToken}` },
         })
         expect (response.status()).toBe(404);
+
+        const productBody = await response.json();
+        expect(productBody).toHaveProperty('message');
+        expect(productBody.message).toBe('Product does not exist')
     })
 });

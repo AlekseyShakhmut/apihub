@@ -5,20 +5,19 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 2 : undefined,
   timeout: 30000,
   expect: {
     timeout: 5000
   },
   reporter: [
-    ['html', { open: 'never' }],  // не открывать автоматически
+    ['html', { open: 'never' }],
     ['allure-playwright'], // для Allure
-    ['list'] // прогресс в консоли
+    ['list']
   ],
   use: {
     baseURL: 'https://api.freeapi.app/api/v1/',
     trace: 'retain-on-failure',
-    // screenshot: 'only-on-failure',
     extraHTTPHeaders: {
       'accept': 'application/json',
     },

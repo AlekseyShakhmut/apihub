@@ -1,9 +1,28 @@
 // tests/products/products.negative.spec.ts
 import { test, expect } from '../../fixtures/auth_context';  // для тестов с токеном
 import { faker } from '@faker-js/faker';
-import {createBaseProductFormData} from "../../utils/form_data_helper";
+import {createBaseProductFormData, createProductFormData} from "../../utils/form_data_helper";
+import {generateCategory, generateProduct} from "../../utils/data_generator";
 
 test.describe('Негативные тесты для продуктов', () => {
+
+    test('POST /products с пустыми полями - 422', async ({ request, authToken }) => {
+        const response = await request.post('ecommerce/products',{
+            multipart: {},
+            headers: {authorization: `Bearer ${authToken}`},
+        })
+        expect(response.status()).toBe(422);
+        const responseBody = await response.json();
+
+        expect(responseBody.message).toBe('Received data is not valid')
+        expect(responseBody.errors.length).toBe(6);
+        expect(responseBody.errors[0].name).toBe('Name is required')
+        expect(responseBody.errors[1].description).toBe('Description is required')
+        expect(responseBody.errors[2].price).toBe('Price is required')
+        expect(responseBody.errors[3].price).toBe('Price must be a number')
+        expect(responseBody.errors[4].category).toBe('Invalid value')
+        expect(responseBody.errors[5].category).toBe('Invalid category')
+     })
 
     test('GET /products/{id} с несуществующим ID - ожидаем 404', async ({ request }) => {
         const invalidId = "000000000000000000000000";  // несуществующий ID
@@ -20,7 +39,7 @@ test.describe('Негативные тесты для продуктов', () =>
         };
 
         const response = await request.post('ecommerce/products', {
-            data: productData
+            multipart: productData
             // Без Authorization header
         });
 
