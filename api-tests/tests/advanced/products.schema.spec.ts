@@ -1,19 +1,21 @@
 import { test, expect } from '../../fixtures/auth_context';
-import { generateCategory, generateProduct } from '../../utils/data_generator';
+import {generateCategory, generateNewPrice, generateProduct} from '../../utils/data_generator';
 import { createImageBlob } from '../../utils/image_helper';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { productSchema } from '../../utils/schemas';
-import {createProductFormData} from "../../utils/form_data_helper";
+import { createProductFormData } from "../../utils/form_data_helper";
 
 const ajv = new Ajv();
-addFormats(ajv);  // ← это ДО компиляции
+addFormats(ajv);
 
-test.describe('JSON Schema валидация', () => {
+test.describe.serial('JSON Schema валидация', () => {
     let categoryId: string;
+    let productId: string;
+    let createdProduct: any;
 
     test.beforeAll(async ({ request, authToken }) => {
-        // Создаем категорию один раз для всех тестов (если их будет несколько)
+        // Создаем категорию один раз
         const categoryData = generateCategory();
         const categoryRes = await request.post('ecommerce/categories', {
             data: categoryData,
@@ -22,10 +24,8 @@ test.describe('JSON Schema валидация', () => {
         categoryId = (await categoryRes.json()).data._id;
     });
 
-    test('GET /products/{id} должен соответствовать схеме', async ({ request, authToken }) => {
-        // 1. Создаем продукт с изображениями (используем готовую categoryId)
+    test('POST /products - ответ должен соответствовать схеме', async ({ request, authToken }) => {
         const productData = generateProduct(categoryId);
-
         const formData = createProductFormData({
             ...productData,
             mainImage: 'main.jpg',
@@ -37,19 +37,49 @@ test.describe('JSON Schema валидация', () => {
             headers: { Authorization: `Bearer ${authToken}` }
         });
         expect(createRes.status()).toBe(201);
-        const { data: product } = await createRes.json();
 
-        // 2. Получаем продукт по ID
-        const response = await request.get(`ecommerce/products/${product._id}`);
+        const responseBody = await createRes.json();
+        createdProduct = responseBody.data;
+        productId = createdProduct._id;
+
+        // Валидация схемы ответа POST
+        const validate = ajv.compile(productSchema);
+        const valid = validate(responseBody.data);
+        expect(valid).toBe(true);
+    });
+
+    test('GET /products/{id} - ответ должен соответствовать схеме', async ({ request }) => {
+        const response = await request.get(`ecommerce/products/${productId}`);
         expect(response.status()).toBe(200);
 
         const responseBody = await response.json();
         const receivedProduct = responseBody.data;
 
-        // 3. Валидируем схему
         const validate = ajv.compile(productSchema);
         const valid = validate(receivedProduct);
+        expect(valid).toBe(true);
+    });
 
+    test('PATCH /products/{id} - ответ должен соответствовать схеме', async ({ request, authToken }) => {
+        // Обновляем продукт
+        const responseNewPrice = generateNewPrice();
+
+        // 2. Формируем запрос на обновление
+        const formData = new FormData();
+        formData.append('price', responseNewPrice.price);
+        formData.append('category', categoryId);
+
+        const updateRes = await request.patch(`ecommerce/products/${productId}`, {
+            multipart: formData,
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+        expect(updateRes.status()).toBe(200);
+
+        const responseBody = await updateRes.json();
+
+        // Валидация схемы ответа PUT
+        const validate = ajv.compile(productSchema);
+        const valid = validate(responseBody.data);
         expect(valid).toBe(true);
     });
 });
