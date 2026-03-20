@@ -3,27 +3,16 @@ import { faker } from '@faker-js/faker';
 import { generateCategory, generateProduct } from '../../utils/data_generator';
 import { createImageBlob } from '../../utils/image_helper';
 import {createProductFormData} from '../../utils/form_data_helper';
-import * as dotenv from 'dotenv';
-dotenv.config({debug: false, quiet: true});
+import {generateValidUser} from "../../utils/user_helper";
 
 test.describe('Параметризованные тесты для цены продукта', () => {
     let categoryId: string;
     let authToken: string;
 
-    const ADMIN_USER_PASSWORD = process.env.ADMIN_USER_PASSWORD;
-    if (!ADMIN_USER_PASSWORD) {
-        throw new Error('ADMIN_USER_PASSWORD не задан в .env файле');
-    }
-
     // Создаем пользователя и категорию ОДИН раз для всех тестов
     test.beforeAll(async ({ request }) => {
         // 1. Регистрируем нового пользователя
-        const user = {
-            email: faker.internet.email().toLowerCase(),
-            password: ADMIN_USER_PASSWORD,
-            role: "ADMIN",
-            username: faker.internet.userName().toLowerCase()
-        };
+        const user = generateValidUser()
 
         const registerRes = await request.post('users/register', {
             data: user

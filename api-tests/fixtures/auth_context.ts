@@ -1,6 +1,7 @@
 import { test as base, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import * as dotenv from 'dotenv';
+import {generateValidUser} from "../utils/user_helper";
 dotenv.config({debug: false, quiet: true});
 
 
@@ -23,12 +24,7 @@ type AuthFixtures = {
 export const test = base.extend<AuthFixtures>({
     // Фикстура с тестовым пользователем (данные)
     testUser: async ({}, use) => {
-        const user = {
-            email: faker.internet.email(),
-            password: ADMIN_USER_PASSWORD,
-            role: "ADMIN",
-            username: faker.internet.userName().toLowerCase(),
-        };
+        const user = generateValidUser();
         await use(user);
     },
 

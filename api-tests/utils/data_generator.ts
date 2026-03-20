@@ -1,4 +1,6 @@
 import { faker } from '@faker-js/faker';
+import * as dotenv from 'dotenv';
+dotenv.config({debug: false, quiet: true});
 
 export function generateCategory() {
     return {

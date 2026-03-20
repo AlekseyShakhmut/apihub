@@ -3,8 +3,7 @@ import {generateCategory, generateNewPrice, generateProduct} from '../../utils/d
 import { faker } from '@faker-js/faker';
 import { createImageBlob } from '../../utils/image_helper';
 import {createProductFormData} from '../../utils/form_data_helper';
-import * as dotenv from 'dotenv';
-dotenv.config({debug: false, quiet: true});
+import {generateValidUser} from "../../utils/user_helper";
 
 test.describe.serial('CRUD операции', () => {
     let categoryId: string;
@@ -14,24 +13,18 @@ test.describe.serial('CRUD операции', () => {
     let originalPrice: number;
     let newPrice: number;
 
-    const ADMIN_USER_PASSWORD = process.env.ADMIN_USER_PASSWORD;
-    if (!ADMIN_USER_PASSWORD) {
-        throw new Error('ADMIN_USER_PASSWORD не задан в .env файле');
-    }
 
     // Подготовка данных перед всеми тестами
     test.beforeAll(async ({ request }) => {
         // 1. Создаем нового пользователя (админа) для всех CRUD операций
-        const user = {
-            email: faker.internet.email(),
-            password: ADMIN_USER_PASSWORD,
-            role: "ADMIN",
-            username: faker.internet.userName().toLowerCase()
-        };
+        const user = generateValidUser();
 
         await request.post('users/register', { data: user });
         const loginRes = await request.post('users/login', {
-            data: { email: user.email, password: user.password }
+            data: {
+                email: user.email,
+                password: user.password
+            }
         });
         authToken = (await loginRes.json()).data.accessToken;
 

@@ -1,14 +1,15 @@
 import { test, expect } from '../../fixtures/auth_context';
-import { generateProduct } from '../../utils/data_generator';
+import {generateCategory, generateProduct} from '../../utils/data_generator';
 import { createProductFormData } from '../../utils/form_data_helper';
 
 test.describe('Обязательные поля продукта', () => {
     let categoryId: string;
 
     test.beforeAll(async ({ request, authToken }) => {
-        // Создаем категорию один раз
+        const category = generateCategory()
+
         const categoryRes = await request.post('ecommerce/categories', {
-            data: { name: 'Test Category' },
+            data: category,
             headers: { Authorization: `Bearer ${authToken}` }
         });
         categoryId = (await categoryRes.json()).data._id;
