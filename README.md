@@ -22,7 +22,9 @@ api-tests/
 │ │ ├── products.list.spec.ts # Получение списка продуктов
 │ │ └── products.negative.spec.ts # Негативные сценарии (400, 401, 404, 422)
 │ ├── 📁 auth/ # Тесты авторизации
-│ │ └── auth.spec.ts # Регистрация, логин, получение токена
+│ │ ├── auth.spec.ts # Регистрация, логин, получение токена
+│ │ ├── auth.negative.spec.ts # Негативные тесты на авторизацию
+│ │ ├── registration.negative.spec.ts # Негативные тесты на регистрацию
 │ └── 📁 advanced/ # Продвинутые тесты
 │ ├── products.schema.spec.ts # JSON Schema валидация
 │ └── products.parametrized.spec.ts # Параметризованные тесты цен
@@ -30,7 +32,8 @@ api-tests/
 │ ├── data_generator.ts # Генерация тестовых данных
 │ ├── form_data_helper.ts # Построитель FormData для multipart
 │ ├── image_helper.ts # Работа с изображениями
-│ └── schemas.ts # JSON Schema для валидации
+│ ├── schemas.ts # JSON Schema для валидации
+│ ├──  user_helper.ts # Регистрация нового пользователя
 ├── 📁 test-data/ # Тестовые изображения
 │ ├── main.jpg
 │ ├── sub1.jpeg

@@ -5,11 +5,6 @@ import {generateValidUser} from "../utils/user_helper";
 dotenv.config({debug: false, quiet: true});
 
 
-const ADMIN_USER_PASSWORD = process.env.ADMIN_USER_PASSWORD;
-if (!ADMIN_USER_PASSWORD) {
-    throw new Error('ADMIN_USER_PASSWORD не задан в .env файле');
-}
-
 // Тип для фикстуры
 type AuthFixtures = {
     authToken: string;
