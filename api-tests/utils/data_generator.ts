@@ -20,6 +20,6 @@ export function generateProduct(categoryId: string) {
 
 export function generateNewPrice() {
     return {
-        price: faker.commerce.price()
+        price: faker.commerce.price().toString()
     }
 }

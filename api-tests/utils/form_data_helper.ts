@@ -48,3 +48,10 @@ export function createBaseProductFormData(categoryId: string): FormData {
 
     return formData;
 }
+
+export function createPriceUpdateFormData(price: string, categoryId: string) {
+    const formData = new FormData();
+    formData.append('price', price);
+    formData.append('category', categoryId);
+    return formData;
+}

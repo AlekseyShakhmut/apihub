@@ -19,7 +19,7 @@ api-tests/
 ├── 📁 tests/ # Тесты
 │ ├── 📁 products/ # CRUD и негативные тесты продуктов
 │ │ ├── products.crud.spec.ts # CRUD операции (create, read, update, delete)
-│ │ ├── products.list.spec.ts # Получение списка продуктов
+│ │ ├── products.list_write.spec.ts # Получение списка продуктов
 │ │ └── products.negative.spec.ts # Негативные сценарии (400, 401, 404, 422)
 │ ├── 📁 auth/ # Тесты авторизации
 │ │ ├── auth.spec.ts # Регистрация, логин, получение токена
@@ -50,7 +50,7 @@ api-tests/
 ## Что тестируется
 
 ### Базовый уровень (CRUD)
-- **products.list.spec.ts** — получение всех рандомных продуктов, сохранение в JSON
+- **products.list_write.spec.ts** — получение всех рандомных продуктов, сохранение в JSON
 - **products.crud.spec.ts** — полный цикл: создание → чтение → обновление → удаление
 
 ### Авторизация

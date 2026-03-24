@@ -2,7 +2,7 @@ import { test, expect } from '../../fixtures/auth_context';
 import {generateCategory, generateNewPrice, generateProduct} from '../../utils/data_generator';
 import { faker } from '@faker-js/faker';
 import { createImageBlob } from '../../utils/image_helper';
-import {createProductFormData} from '../../utils/form_data_helper';
+import {createPriceUpdateFormData, createProductFormData} from '../../utils/form_data_helper';
 import {generateValidUser} from "../../utils/user_helper";
 
 test.describe.serial('CRUD операции', () => {
@@ -88,10 +88,7 @@ test.describe.serial('CRUD операции', () => {
         // 1. Генерируем новую цену
         const responseNewPrice = generateNewPrice();
 
-        // 2. Формируем запрос на обновление
-        const formData = new FormData();
-        formData.append('price', responseNewPrice.price);
-        formData.append('category', categoryId);
+        const formData = createPriceUpdateFormData(responseNewPrice.price, categoryId);
 
         const responseUpdate = await request.patch(`ecommerce/products/${productId}`,{
             multipart: formData,

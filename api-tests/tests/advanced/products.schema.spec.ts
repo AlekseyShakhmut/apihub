@@ -4,7 +4,7 @@ import { createImageBlob } from '../../utils/image_helper';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { productSchema } from '../../utils/schemas';
-import { createProductFormData } from "../../utils/form_data_helper";
+import {createPriceUpdateFormData, createProductFormData} from "../../utils/form_data_helper";
 
 const ajv = new Ajv();
 addFormats(ajv);
@@ -65,9 +65,7 @@ test.describe.serial('JSON Schema валидация', () => {
         const responseNewPrice = generateNewPrice();
 
         // 2. Формируем запрос на обновление
-        const formData = new FormData();
-        formData.append('price', responseNewPrice.price);
-        formData.append('category', categoryId);
+        const formData = createPriceUpdateFormData(responseNewPrice.price, categoryId);
 
         const updateRes = await request.patch(`ecommerce/products/${productId}`, {
             multipart: formData,
