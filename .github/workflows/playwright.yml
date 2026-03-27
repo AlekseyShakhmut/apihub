@@ -2,89 +2,112 @@ name: API Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master ]  # запуск при пуше в main/master
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master ]  # запуск при создании pull request
   schedule:
-    - cron: '0 3 * * *'
-  workflow_dispatch:
+    - cron: '0 3 * * *'  # ежедневный запуск в 3:00 ночи
+  workflow_dispatch:  # возможность ручного запуска из интерфейса GitHub
 
 jobs:
   test:
-    timeout-minutes: 30
-    runs-on: ubuntu-latest
+    timeout-minutes: 30  # максимальное время выполнения job
+    runs-on: ubuntu-latest  # операционная система для запуска
 
     strategy:
-      fail-fast: false
+      fail-fast: false  # не останавливать другие тесты при падении одного
       matrix:
-        module: [products, auth, advanced]
+        module: [products, auth, advanced, random_products]  # параллельный запуск по папкам с тестами
 
     steps:
+      # загрузка кода репозитория
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # установка Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'npm'  # кэширование node_modules для ускорения
 
+      # установка зависимостей из package.json
       - name: Install dependencies
-        run: npm ci
+        run: npm ci  # ci работает быстрее, использует package-lock.json
 
+      # создание файла .env из секретов GitHub
       - name: Create .env file
         run: |
           echo "ADMIN_USER_PASSWORD=${{ secrets.ADMIN_USER_PASSWORD }}" >> .env
           echo "TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}" >> .env
           echo "API_BASE_URL=https://api.freeapi.app/api/v1" >> .env
 
+      # запуск тестов для конкретного модуля
       - name: Run tests for ${{ matrix.module }}
         run: npx playwright test tests/${{ matrix.module }}/ --reporter=html,allure-playwright,list
-        continue-on-error: true
+        continue-on-error: true  # продолжать выполнение даже если тесты упали (чтобы сохранить отчеты)
 
+      # проверка, что allure-results создался и содержит файлы
+      - name: Check allure-results content
+        if: always()  # выполняется всегда, даже если тесты упали
+        run: |
+          if [ -d "allure-results" ]; then
+            echo "allure-results exists"
+            ls -la allure-results/
+            echo "Number of files: $(ls -1 allure-results/ | wc -l)"
+          else
+            echo "allure-results folder not found"
+          fi
+
+      # сохранение Playwright HTML отчета
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.module }}-${{ github.run_id }}
-          path: playwright-report/
-          retention-days: 30
+          path: playwright-report/  # папка с HTML отчетом
+          retention-days: 30  # хранить 30 дней
 
+      # сохранение трейсов, скриншотов и видео
       - name: Upload test results (traces, screenshots)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.module }}-${{ github.run_id }}
-          path: test-results/
+          path: test-results/  # папка с артефактами Playwright
           retention-days: 30
 
+      # установка Allure командной строки
       - name: Install Allure command line
         if: always()
         run: npm install -g allure-commandline
 
+      # генерация Allure отчета из сырых данных
       - name: Generate Allure report
         if: always()
         run: |
-          if [ -d "allure-results" ]; then
+          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
             allure generate allure-results -o allure-report --clean
             echo "Allure report generated successfully"
           else
-            echo "allure-results folder not found, skipping report generation"
+            echo "allure-results folder is empty or not found, skipping report generation"
           fi
 
+      # сохранение Allure отчета
       - name: Upload Allure report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report-${{ matrix.module }}-${{ github.run_id }}
-          path: allure-report/
+          path: allure-report/  # папка с готовым Allure отчетом
           retention-days: 30
 
+  # отдельный job для уведомлений (выполняется после всех тестов)
   notify:
     name: Send notification
-    needs: test
-    if: always()
+    needs: test  # ждет завершения всех тестов
+    if: always()  # выполняется всегда
     runs-on: ubuntu-latest
     steps:
       - name: Check status
-        run: echo "Tests completed"
+        run: echo "Tests completed"  # можно заменить на отправку в Telegram/Slack
