@@ -12,7 +12,7 @@
 - **Allure** — отчетность
 
 ## Структура проекта
-
+```
 api-tests/
 ├── fixtures/
 │ └── auth_context.ts
@@ -50,7 +50,7 @@ api-tests/
 ├── playwright.config.ts
 ├── package.json
 └── README.md
-
+```
 ## Что тестируется
 
 ### Базовый уровень (CRUD)
