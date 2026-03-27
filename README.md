@@ -14,57 +14,81 @@
 ## Структура проекта
 
 api-tests/
-├── 📁 fixtures/ # Фикстуры Playwright
-│ └── auth_context.ts # Фикстура с токеном авторизации
-├── 📁 tests/ # Тесты
-│ ├── 📁 products/ # CRUD и негативные тесты продуктов
-│ │ ├── products.crud.spec.ts # CRUD операции (create, read, update, delete)
-│ │ ├── products.list_write.spec.ts # Получение списка продуктов
-│ │ └── products.negative.spec.ts # Негативные сценарии (400, 401, 404, 422)
-│ ├── 📁 auth/ # Тесты авторизации
-│ │ ├── auth.spec.ts # Регистрация, логин, получение токена
-│ │ ├── auth.negative.spec.ts # Негативные тесты на авторизацию
-│ │ ├── registration.negative.spec.ts # Негативные тесты на регистрацию
-│ └── 📁 advanced/ # Продвинутые тесты
-│ ├── products.schema.spec.ts # JSON Schema валидация
-│ └── products.parametrized.spec.ts # Параметризованные тесты цен
-├── 📁 utils/ # Вспомогательные модули
-│ ├── data_generator.ts # Генерация тестовых данных
-│ ├── form_data_helper.ts # Построитель FormData для multipart
-│ ├── image_helper.ts # Работа с изображениями
-│ ├── schemas.ts # JSON Schema для валидации
-│ ├──  user_helper.ts # Регистрация нового пользователя
-├── 📁 test-data/ # Тестовые изображения
-│ ├── main.jpg
-│ ├── sub1.jpeg
-│ ├── sub2.jpg
-│ └── sub3.jpg
-├── 📁 data/ # Сохраненные данные
-│ └── products_initial.json # Список рандомных продуктов
-├── allure-results/ # Сырые данные для Allure (генерируется)
-├── allure-report/ # Готовый отчет Allure (генерируется)
-├── playwright.config.ts # Конфигурация Playwright
+├── fixtures/
+│   └── auth_context.ts
+├── tests/
+│   ├── products/
+│   │   ├── products.crud.spec.ts
+│   │   ├── products.list.spec.ts
+│   │   ├── products.negative.spec.ts
+│   │   ├── products.schema.spec.ts        
+│   │   ├── products.parametrized.spec.ts  
+│   │   ├── products.category.spec.ts
+│   │   └── products.image.spec.ts
+│   ├── auth/
+│   │   ├── auth.spec.ts
+│   │   ├── auth.negative.spec.ts
+│   │   └── registration.negative.spec.ts
+│   └── random_products/
+│       ├── products.list_read.spec.ts
+│       └── products.list_write.spec.ts
+├── utils/
+│   ├── data_generator.ts
+│   ├── form_data_helper.ts
+│   ├── image_helper.ts
+│   ├── schemas.ts
+│   ├── setup.ts
+│   ├── types.ts
+│   └── user_helper.ts
+├── test-data/
+│   ├── main.jpg
+│   ├── sub1.jpeg
+│   ├── sub2.jpg
+│   └── sub3.jpg
+├── data/
+│   └── products_initial.json
+├── playwright.config.ts
 ├── package.json
 └── README.md
 
 ## Что тестируется
 
 ### Базовый уровень (CRUD)
-- **products.list_write.spec.ts** — получение всех рандомных продуктов, сохранение в JSON
 - **products.crud.spec.ts** — полный цикл: создание → чтение → обновление → удаление
 
-### Авторизация
-- **auth.spec.ts** — регистрация → логин → получение токена → защищенный запрос
+### Получение данных
+- **products.list.spec.ts** — получение списка рандомных продуктов из публичного API, сохранение в JSON
 
-### Негативные тесты
-- **GET с несуществующим ID** — ожидаем 404
-- **POST без авторизации** — ожидаем 401
-- **POST с неверным Content-Type** — ожидаем 400
-- **POST с невалидными данными** — ожидаем 422
+### Работа с категориями
+- **products.category.spec.ts** — получение продуктов по категории (связь категория → продукты)
 
-### Продвинутые тесты
-- **products.schema.spec.ts** — проверка JSON Schema продукта
+### Изображения
+- **products.image.spec.ts** — удаление дополнительных изображений у продукта
+
+### Валидация
+- **products.schema.spec.ts** — проверка JSON Schema для POST, GET, PATCH, DELETE
 - **products.parametrized.spec.ts** — граничные значения цены (0, отрицательные, большие числа)
+
+### Авторизация и регистрация
+- **auth.spec.ts** — регистрация → логин → получение токена → защищенный запрос
+- **auth.negative.spec.ts** — негативные тесты авторизации
+- **registration.negative.spec.ts** — негативные тесты регистрации (email, username, роль)
+
+### Негативные тесты продуктов
+- **products.negative.spec.ts** — комплекс негативных сценариев:
+    - POST /products без авторизации (401)
+    - POST /products с неверным Content-Type (400)
+    - POST /products с пустыми полями (422)
+    - POST /products с неверным типом данных price (422)
+    - GET /products/{id} с несуществующим ID (404)
+    - GET /products/{id} с невалидным ID (422)
+    - PATCH /products/{id} без авторизации (401)
+    - PATCH /products/{id} с несуществующим ID (404)
+    - PATCH /products/{id} с невалидным ID (422)
+    - PATCH /products/{id} с неверным типом price (422)
+    - DELETE /products/{id} без авторизации (401)
+    - DELETE /products/{id} с несуществующим ID (404)
+    - DELETE /products/{id} с невалидным ID (422)
 
 ## Установка и запуск
 
@@ -113,17 +137,21 @@ npm run allure:report	Генерация и открытие Allure отчета
 HTML-отчет Playwright: npx playwright show-report
 Allure отчет: npm run allure:report (откроется автоматически)
 
-🧪 Особенности реализации
-- Один пользователь на все CRUD тесты (создается в beforeAll)
+Особенности реализации
+- Один пользователь на все CRUD тесты (создается в `beforeAll`)
+- Очистка данных после тестов (удаление продуктов и категорий в `afterAll`)
 - Фикстура `authToken` для одиночных тестов (авторизация через `auth_context.ts`)
 - Изоляция тестов через уникальные данные (faker)
 - Параметризация для граничных значений
 - JSON Schema валидация с ajv-formats
 - Multipart запросы с загрузкой изображений
+- Повторяющаяся логика вынесена в `setup.ts` (создание категории + продукта)
 
 Замеченные особенности API
-Цена и stock принимаются как числа, но в multipart передаются строками
-При получении продукта изображения возвращаются как объекты с url/localPath/_id
-Для получения 400 нужно намеренно сломать заголовки (multipart + Content-Type: application/json)
-Цена может быть 0 и отрицательной (API принимает как валидные значения)
-При очень больших числах (более 1e+23) возникает переполнение → 422
+- **Цена и stock** — принимаются как числа, но в multipart передаются строками
+- **Изображения** — при получении продукта возвращаются как объекты с полями `url`, `localPath`, `_id`
+- **400 Bad Request** — можно получить, намеренно сломав заголовки (multipart + `Content-Type: application/json`)
+- **Цена** — может быть 0 и отрицательной (API принимает как валидные значения)
+- **Переполнение** — при очень больших числах (более 1e+23) возникает ошибка 422
+- **Удаление продукта** — возвращает полный объект удаленного продукта (200 OK)
+- **Удаление категории** — возвращает полный объект удаленной категории (200 OK)
