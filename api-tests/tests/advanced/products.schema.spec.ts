@@ -30,6 +30,16 @@ test.describe.serial('JSON Schema валидация', () => {
         categoryId = (await categoryRes.json()).data._id;
     });
 
+    test.afterAll('Удаление категории', async ({request, authToken}) => {
+        const responseCategory = await request.delete(`ecommerce/categories/${categoryId}`,{
+            headers: {'Authorization': `Bearer ${authToken}`}
+        });
+        expect([200, 204]).toContain(responseCategory.status());
+
+        const checkCategory = await request.get(`ecommerce/categories/${categoryId}`);
+        expect(checkCategory.status()).toBe(404);
+    })
+
     test('POST /products - ответ должен соответствовать схеме', async ({ request, authToken }) => {
         const productData = generateProduct(categoryId);
         const formData = createProductFormData({

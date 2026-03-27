@@ -2,80 +2,80 @@ name: API Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master ]  # запуск при пуше в main/master
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master ]  # запуск при создании PR
   schedule:
-    - cron: '0 3 * * *'  # ежедневный прогон в 3:00 ночи
-  workflow_dispatch:      # ручной запуск из интерфейса GitHub
+    - cron: '0 3 * * *'  # ежедневный запуск в 3:00
+  workflow_dispatch:  # возможность ручного запуска
 
 jobs:
   test:
-    timeout-minutes: 30
-    runs-on: ubuntu-latest
+    timeout-minutes: 30  # таймаут для каждого job
+    runs-on: ubuntu-latest  # операционная система
 
-    # Параллельный запуск по модулям
     strategy:
-      fail-fast: false  # не останавливать другие при падении одного
+      fail-fast: false  # не останавливать другие тесты при падении одного
       matrix:
-        module: [products, auth, advanced, random_products]
-        # можно добавить другие модули по мере роста
+        module: [products, auth, advanced]  # запуск тестов по папкам параллельно
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4  # скачивает код репозитория
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4  # устанавливает Node.js
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'npm'  # кэширует node_modules для ускорения
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci  # устанавливает зависимости (быстрее npm install)
 
       - name: Create .env file
-        run: |
+        run: |  # создает файл с переменными окружения из секретов GitHub
           echo "ADMIN_USER_PASSWORD=${{ secrets.ADMIN_USER_PASSWORD }}" >> .env
           echo "TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}" >> .env
           echo "API_BASE_URL=https://api.freeapi.app/api/v1" >> .env
 
       - name: Run tests for ${{ matrix.module }}
         run: npx playwright test tests/${{ matrix.module }}/ --reporter=html,allure-playwright,list
-        continue-on-error: true
+        continue-on-error: true  # продолжать выполнение даже если тесты упали (чтобы сохранить отчеты)
+
+      - name: Upload Playwright report
+        if: always()  # выполняется всегда, даже если тесты упали
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.module }}-${{ github.run_id }}
+          path: playwright-report/  # папка с HTML отчетом Playwright
+          retention-days: 30  # хранить 30 дней
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.module }}-${{ github.run_id }}
-          path: |
-            test-results/
-            playwright-report/
-            allure-results/
+          path: test-results/  # папка с трейсами, скриншотами
           retention-days: 30
 
       - name: Generate Allure report
         if: always()
         run: |
-          npx allure generate allure-results -o allure-report --clean || true
+          npx allure generate allure-results -o allure-report --clean || true  # генерирует Allure отчет из сырых данных
 
       - name: Upload Allure report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-${{ matrix.module }}
-          path: allure-report/
+          name: allure-report-${{ matrix.module }}-${{ github.run_id }}
+          path: allure-report/  # папка с готовым Allure отчетом
           retention-days: 30
 
-  # Отдельный job для отправки уведомлений
   notify:
     name: Send notification
-    needs: test
-    if: always()
+    needs: test  # ждет завершения всех тестов
+    if: always()  # выполняется всегда
     runs-on: ubuntu-latest
     steps:
       - name: Check status
-        run: |
-          echo "Тесты завершены"
-      # Здесь можно добавить уведомление в Telegram/Slack
+        run: echo "Tests completed"  # можно заменить на отправку в Telegram/Slack

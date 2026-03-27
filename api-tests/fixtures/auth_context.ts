@@ -1,5 +1,4 @@
 import { test as base, expect } from '@playwright/test';
-import { faker } from '@faker-js/faker';
 import * as dotenv from 'dotenv';
 import {generateValidUser} from "../utils/user_helper";
 dotenv.config({debug: false, quiet: true});
