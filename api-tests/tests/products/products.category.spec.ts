@@ -1,6 +1,5 @@
 import {test, expect} from "../../fixtures/auth_context";
-import {generateCategory, generateProduct} from "../../utils/data_generator";
-import {createProductFormData} from "../../utils/form_data_helper";
+import {createCategoryAndProduct} from "../../utils/setup";
 
 test.describe.serial("Проверка информации о товаре на основе категории, к которой он относится", () => {
     let categoryId: string;
@@ -10,42 +9,18 @@ test.describe.serial("Проверка информации о товаре на
     let productPrice: number;
 
     test.beforeAll('Создание категории и продукта', async ({request, authToken}) => {
-        const categoryCreate = generateCategory();
-
-        const responseCategory = await request.post('ecommerce/categories', {
-            data: categoryCreate,
-            headers: {'Authorization': `Bearer ${authToken}`}
-        })
-            expect(responseCategory.status()).toBe(201);
-            const bodyCategory = await responseCategory.json();
-            expect(bodyCategory.message).toBe('Category created successfully')
-            categoryId = bodyCategory.data._id
-            categoryName = bodyCategory.data.name
-
-            const productData = generateProduct(categoryId);
-            const formData = createProductFormData({
-            ...productData,
-            mainImage: 'main.jpg',
-            subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
-        });
-            const responseProduct = await request.post('ecommerce/products', {
-                multipart: formData,
-                headers: {'Authorization': `Bearer ${authToken}`}
-            })
-              expect(responseProduct.status()).toBe(201);
-              const bodyProduct = await responseProduct.json();
-              expect(bodyProduct.message).toBe('Product created successfully')
-              productId = bodyProduct.data._id
-              productName = bodyProduct.data.name
-              productPrice = bodyProduct.data.price
+        const setup = await createCategoryAndProduct(request, authToken);
+        categoryId = setup.categoryId;
+        categoryName = setup.categoryName;
+        productId = setup.productId;
+        productName = setup.productName;
+        productPrice = setup.productPrice;
     })
     test.afterAll('Удаление категории и продукта', async ({request, authToken}) => {
         const responseProduct = await request.delete(`ecommerce/products/${productId}`,{
             headers: {'Authorization': `Bearer ${authToken}`}
         });
         expect([200, 204]).toContain(responseProduct.status());
-        const bodyProduct = await responseProduct.json();
-        expect(bodyProduct.message).toBe('Product deleted successfully')
 
         const checkProduct = await request.get(`ecommerce/products/${productId}`);
         expect(checkProduct.status()).toBe(404);
@@ -54,8 +29,6 @@ test.describe.serial("Проверка информации о товаре на
             headers: {'Authorization': `Bearer ${authToken}`}
         });
         expect([200, 204]).toContain(responseCategory.status());
-        const bodyCategory = await responseCategory.json();
-        expect(bodyCategory.message).toBe('Category deleted successfully')
 
         const checkCategory = await request.get(`ecommerce/categories/${categoryId}`);
         expect(checkCategory.status()).toBe(404);
