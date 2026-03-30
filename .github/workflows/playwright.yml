@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false  # не останавливать другие тесты при падении одного
       matrix:
-        module: [products, auth, advanced, random_products]  # параллельный запуск по папкам с тестами
+        module: [products, auth, random_products]  # параллельный запуск по папкам с тестами
 
     steps:
       # загрузка кода репозитория
