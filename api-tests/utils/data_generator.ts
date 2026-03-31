@@ -13,7 +13,7 @@ export function generateProduct(categoryId: string) {
         name: faker.commerce.productName(),
         description: faker.commerce.productDescription(),
         price: faker.commerce.price(),
-        stock: faker.number.int({ min: 1, max: 100 }).toString(),
+        stock: faker.number.int({ min: 50, max: 100 }).toString(),
         category: categoryId
     };
 }
@@ -21,5 +21,11 @@ export function generateProduct(categoryId: string) {
 export function generateNewPrice() {
     return {
         price: faker.commerce.price().toString()
+    }
+}
+
+export function addItemQuantity() {
+    return {
+        quantity: faker.number.int({ min: 1, max: 30 })
     }
 }

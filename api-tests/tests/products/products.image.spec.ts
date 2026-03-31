@@ -1,6 +1,7 @@
 import { test, expect } from "../../fixtures/auth_context";
-import { createCategoryAndProduct } from "../../utils/setup";
+import { createCategoryAndProduct } from "../../utils/setup_product";
 import type { SubImage } from '../../utils/types';
+import {deleteProductAndCategory} from "../../utils/delete_product";
 
 test.describe.serial("Проверка возможности удаления доп. изображений", () => {
     let categoryId: string;
@@ -17,23 +18,8 @@ test.describe.serial("Проверка возможности удаления �
         expect(setup.subImages.length).toBe(3);
     });
 
-    test.afterAll(async ({ request, authToken }) => {
-
-        const responseProduct = await request.delete(`ecommerce/products/${productId}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        expect([200, 204]).toContain(responseProduct.status());
-
-        const checkProduct = await request.get(`ecommerce/products/${productId}`);
-        expect(checkProduct.status()).toBe(404);
-
-        const responseCategory = await request.delete(`ecommerce/categories/${categoryId}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        expect([200, 204]).toContain(responseCategory.status());
-
-        const checkCategory = await request.get(`ecommerce/categories/${categoryId}`);
-        expect(checkCategory.status()).toBe(404);
+    test.afterAll('Удаление категории и продуктов', async ({ request, authToken }) => {
+        await deleteProductAndCategory(request, authToken,productId, categoryId);
     });
 
     test('Удаление одного дополнительного изображения', async ({ request, authToken }) => {
