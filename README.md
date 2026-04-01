@@ -113,12 +113,19 @@ api-tests/
 ## Хелперы
 
 **data_generator.ts** — генерация тестовых данных (продукты, количество, цены)
+
 **form_data_helper.ts** — построитель FormData для multipart запросов
+
 **image_helper.ts** — работа с изображениями (конвертация в Blob)
+
 **schemas.ts** — JSON Schema для валидации ответов API
-**setup_product.ts** — создание категории и продуктов для тестов
-**delete_product.ts** — удаление продуктов и категории после тестов
+
+**setup_product.ts** — создание категорий и продуктов для тестов
+
+**delete_product.ts** — удаление продуктов и категорий после тестов
+
 **user_helper.ts** — генерация данных пользователя
+
 **types.ts** — TypeScript интерфейсы (SubImage, Product)
 
 ## Установка и запуск
