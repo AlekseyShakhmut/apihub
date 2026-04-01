@@ -65,6 +65,7 @@ export async function createProduct(request: any, authToken: string, categoryId:
     return {
         productId: body.data._id,
         productName: body.data.name,
-        productPrice: body.data.price
+        productPrice: body.data.price,
+        fullProduct: body.data
     };
 }

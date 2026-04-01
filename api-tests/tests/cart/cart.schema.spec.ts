@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/auth_context';
-import { createCategoryAndProduct, createProduct } from "../../utils/setup_product";
+import { createCategoryAndProduct } from "../../utils/setup_product";
 import { addItemQuantity } from "../../utils/data_generator";
 import { generateValidUser } from "../../utils/user_helper";
 import Ajv from 'ajv';
@@ -43,6 +43,15 @@ test.describe.serial('Cart - JSON Schema validation', () => {
         expect(response.status()).toBe(200);
 
         const body = await response.json();
+
+        // диагностика
+        console.log('cartSchema type:', typeof cartSchema);
+        console.log('cartSchema is object:', cartSchema && typeof cartSchema === 'object');
+
+        if (!cartSchema || typeof cartSchema !== 'object') {
+            throw new Error(`cartSchema is invalid: ${cartSchema}`);
+        }
+
         const validate = ajv.compile(cartSchema);
         expect(validate(body.data)).toBe(true);
     });

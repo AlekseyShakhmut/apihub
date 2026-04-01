@@ -1,6 +1,5 @@
 import { test, expect } from '../../fixtures/auth_context';
 import {generateCategory, generateNewPrice, generateProduct} from '../../utils/data_generator';
-import { createImageBlob } from '../../utils/image_helper';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import {
@@ -10,6 +9,8 @@ import {
     removeSubImageResponseSchema
 } from '../../utils/schemas';
 import {createPriceUpdateFormData, createProductFormData} from "../../utils/form_data_helper";
+import {createCategoryAndProduct, createProduct} from "../../utils/setup_product";
+import {deleteCategoryOnly} from "../../utils/delete_product";
 
 const ajv = new Ajv();
 addFormats(ajv);
@@ -21,48 +22,21 @@ test.describe.serial('JSON Schema валидация', () => {
     let subImageId: string;
 
     test.beforeAll(async ({ request, authToken }) => {
-        // Создаем категорию один раз
-        const categoryData = generateCategory();
-        const categoryRes = await request.post('ecommerce/categories', {
-            data: categoryData,
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        categoryId = (await categoryRes.json()).data._id;
-    });
-
+        const setup = await createCategoryAndProduct(request, authToken);
+        categoryId = setup.categoryId;
+    })
     test.afterAll('Удаление категории', async ({request, authToken}) => {
-        const responseCategory = await request.delete(`ecommerce/categories/${categoryId}`,{
-            headers: {'Authorization': `Bearer ${authToken}`}
-        });
-        expect([200, 204]).toContain(responseCategory.status());
-
-        const checkCategory = await request.get(`ecommerce/categories/${categoryId}`);
-        expect(checkCategory.status()).toBe(404);
+        await deleteCategoryOnly(request,authToken,categoryId);
     })
 
     test('POST /products - ответ должен соответствовать схеме', async ({ request, authToken }) => {
-        const productData = generateProduct(categoryId);
-        const formData = createProductFormData({
-            ...productData,
-            mainImage: 'main.jpg',
-            subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
-        });
-
-        const createRes = await request.post('ecommerce/products', {
-            multipart: formData,
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        expect(createRes.status()).toBe(201);
-
-        const productBody = await createRes.json();
-        createdProduct = productBody.data;
-        productId = createdProduct._id;
+        const product = await createProduct(request, authToken, categoryId);
+        createdProduct = product.fullProduct;
+        productId = product.productId;
         subImageId = createdProduct.subImages[0]?._id;
 
-        // Валидация схемы ответа POST
         const validate = ajv.compile(productSchema);
-        const valid = validate(createdProduct);
-        expect(valid).toBe(true);
+        expect(validate(createdProduct)).toBe(true);
     });
 
     test('GET /products/{id} - ответ должен соответствовать схеме', async ({ request }) => {

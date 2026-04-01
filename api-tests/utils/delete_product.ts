@@ -31,3 +31,17 @@ export async function deleteProductAndCategory(
     const checkCategory = await request.get(`ecommerce/categories/${categoryId}`);
     expect(checkCategory.status()).toBe(404);
 }
+
+export async function deleteCategoryOnly(
+    request: any,
+    authToken: string,
+    categoryId: string
+) {
+    const responseCategory = await request.delete(`ecommerce/categories/${categoryId}`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    expect([200, 204]).toContain(responseCategory.status());
+
+    const checkCategory = await request.get(`ecommerce/categories/${categoryId}`);
+    expect(checkCategory.status()).toBe(404);
+}
