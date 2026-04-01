@@ -44,13 +44,13 @@ test.describe.serial('Cart - JSON Schema validation', () => {
 
         const body = await response.json();
 
-        // диагностика
-        console.log('cartSchema type:', typeof cartSchema);
-        console.log('cartSchema is object:', cartSchema && typeof cartSchema === 'object');
-
-        if (!cartSchema || typeof cartSchema !== 'object') {
-            throw new Error(`cartSchema is invalid: ${cartSchema}`);
-        }
+        // // диагностика
+        // console.log('cartSchema type:', typeof cartSchema);
+        // console.log('cartSchema is object:', cartSchema && typeof cartSchema === 'object');
+        //
+        // if (!cartSchema || typeof cartSchema !== 'object') {
+        //     throw new Error(`cartSchema is invalid: ${cartSchema}`);
+        // }
 
         const validate = ajv.compile(cartSchema);
         expect(validate(body.data)).toBe(true);
