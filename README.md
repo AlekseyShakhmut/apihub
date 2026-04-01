@@ -29,15 +29,20 @@ api-tests/
 │ │ ├── auth.spec.ts
 │ │ ├── auth.negative.spec.ts
 │ │ └── registration.negative.spec.ts
-│ └── random_products/
-│ ├── products.list_read.spec.ts
-│ └── products.list_write.spec.ts
+│ ├── random_products/
+│ │ ├── products.list_read.spec.ts
+│ │ └── products.list_write.spec.ts
+│ └── cart/
+│ ├── cart.crud.spec.ts
+│ ├── cart.negative.spec.ts
+│ └── cart.schema.spec.ts
 ├── utils/
 │ ├── data_generator.ts
 │ ├── form_data_helper.ts
 │ ├── image_helper.ts
 │ ├── schemas.ts
 │ ├── setup_product.ts
+│ ├── delete_product.ts
 │ ├── types.ts
 │ └── user_helper.ts
 ├── test-data/
@@ -50,6 +55,7 @@ api-tests/
 ├── playwright.config.ts
 ├── package.json
 └── README.md
+
 ```
 ## Что тестируется
 
@@ -89,6 +95,31 @@ api-tests/
     - DELETE /products/{id} без авторизации (401)
     - DELETE /products/{id} с несуществующим ID (404)
     - DELETE /products/{id} с невалидным ID (422)
+
+### Корзина
+- **cart.crud.spec.ts** — полный цикл работы с корзиной:
+  - добавление первого продукта
+  - добавление второго продукта
+  - проверка содержимого корзины
+  - удаление одного продукта из корзины
+  - полная очистка корзины
+- **cart.negative.spec.ts** — негативные сценарии корзины:
+  - добавление невалидного количества (0, отрицательное, превышающее остаток)
+  - запросы без авторизации (401) для POST, DELETE, GET
+  - удаление несуществующего продукта из корзины (404)
+  - удаление с невалидным ID (422)
+- **cart.schema.spec.ts** — проверка JSON Schema для POST и GET
+
+## Хелперы
+
+**data_generator.ts** — генерация тестовых данных (продукты, количество, цены)
+**form_data_helper.ts** — построитель FormData для multipart запросов
+**image_helper.ts** — работа с изображениями (конвертация в Blob)
+**schemas.ts** — JSON Schema для валидации ответов API
+**setup_product.ts** — создание категории и продуктов для тестов
+**delete_product.ts** — удаление продуктов и категории после тестов
+**user_helper.ts** — генерация данных пользователя
+**types.ts** — TypeScript интерфейсы (SubImage, Product)
 
 ## Установка и запуск
 
