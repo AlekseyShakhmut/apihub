@@ -6,17 +6,15 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
 # Allure reports
 allure-results/
 allure-report/
 
-# Playwright reports
-playwright-report/
-test-results/
-
 # IDE settings
 .idea/
 .vscode/
+*.iml
 
 # macOS system files
 .DS_Store
@@ -25,7 +23,3 @@ test-results/
 .env
 .env.local
 .env.*.local
-
-# IDE settings
-.idea/
-*.iml

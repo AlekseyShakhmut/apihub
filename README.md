@@ -134,46 +134,67 @@ api-tests/
 ```bash
 git clone <https://github.com/AlekseyShakhmut/apihub.git>
 cd apihub
+```
 
-2.Установить зависимости
-    npm install
-3. Скопировать `.env.example` в `.env`:
-    ```bash
-    cp .env.example .env
-4. Заполнить .env своими данными
-5.Установить Allure (глобально, для отчетов)
-    npm install -g allure-commandline
-6. Запустить тесты
+### 2. Установить зависимости
+```bash
+npm install
+```
 
+### 3. Настроить окружение
+```bash
+cp .env.example .env
+```
+- Заполнить `.env` своими данными.
+- `API_BASE_URL` берется из `.env` (если не задан, используется дефолт из `playwright.config.ts`).
+
+### 4. Установить Allure CLI (для локального просмотра отчетов)
+```bash
+npm install -g allure-commandline
+```
+
+### 5. Запуск тестов
+```bash
 # Все тесты
-    npm test
-# Тесты с открытием Allure отчета
-    npm run test:allure
+npm test
 
-# Только генерация Allure отчета (после тестов)
-    npm run allure:report
-    
-Чтобы открыть отчет только по конкретному тесту:
-# 1. Очистить старые результаты
+# С открытым браузером
+npm run test:headed
+
+# Debug режим
+npm run test:debug
+
+# Тесты + генерация и открытие Allure отчета
+npm run test:allure
+
+# Генерация и открытие Allure отчета (после прогона)
+npm run allure:report
+```
+
+### Запуск конкретного теста + отчет
+```bash
+# 1) Очистить старые результаты
 rm -rf allure-results
 
-# 2. Запустить конкретный тест
-npx playwright test api-tests/tests/advanced/products.parametrized.spec.ts
+# 2) Запустить конкретный spec
+npx playwright test api-tests/tests/products/products.parametrized.spec.ts
 
-# 3. Открыть отчет (теперь только по этому тесту)
+# 3) Построить и открыть Allure отчет
 npm run allure:report
+```
 
-Команды в package.json
-Команда	Описание
-npm test	Запуск всех тестов
-npm run test:headed	Запуск с открытым браузером (для UI)
-npm run test:debug	Запуск в режиме отладки
-npm run test:allure	Тесты + генерация + открытие Allure отчета
-npm run allure:report	Генерация и открытие Allure отчета
+### Команды из `package.json`
+- `npm test` - запуск всех тестов
+- `npm run test:headed` - запуск с открытым браузером
+- `npm run test:debug` - запуск в режиме отладки
+- `npm run test:allure` - тесты + генерация + открытие Allure отчета
+- `npm run allure:report` - генерация и открытие Allure отчета
 
 Отчетность
 HTML-отчет Playwright: npx playwright show-report
 Allure отчет: npm run allure:report (откроется автоматически)
+
+Примечание: `allure-results/` и `allure-report/` являются артефактами запуска и не должны коммититься в репозиторий.
 
 Особенности реализации
 - Один пользователь на все CRUD тесты (создается в `beforeAll`)

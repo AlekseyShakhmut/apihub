@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as dotenv from 'dotenv';
+
+dotenv.config({ debug: false, quiet: true });
 
 export default defineConfig({
   testDir: 'api-tests/tests',
@@ -16,7 +19,7 @@ export default defineConfig({
     ['list']
   ],
   use: {
-    baseURL: 'https://api.freeapi.app/api/v1/',
+    baseURL: process.env.API_BASE_URL || 'https://api.freeapi.app/api/v1/',
     trace: 'retain-on-failure',
     extraHTTPHeaders: {
       'accept': 'application/json',

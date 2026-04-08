@@ -4,6 +4,9 @@ import {createBaseProductFormData, createPriceUpdateFormData,} from "../../utils
 
 test.describe('Негативные тесты для продуктов', () => {
 
+    const getErrorMessages = (errors: Array<Record<string, string>>) =>
+        errors.map((error) => Object.values(error)[0]);
+
     test('POST /products с пустыми полями - 422', async ({ request, authToken }) => {
         const response = await request.post('ecommerce/products',{
             multipart: {},
@@ -11,15 +14,18 @@ test.describe('Негативные тесты для продуктов', () =>
         })
         expect(response.status()).toBe(422);
         const responseBody = await response.json();
+        const errorMessages = getErrorMessages(responseBody.errors);
 
         expect(responseBody.message).toBe('Received data is not valid')
         expect(responseBody.errors.length).toBe(6);
-        expect(responseBody.errors[0].name).toBe('Name is required')
-        expect(responseBody.errors[1].description).toBe('Description is required')
-        expect(responseBody.errors[2].price).toBe('Price is required')
-        expect(responseBody.errors[3].price).toBe('Price must be a number')
-        expect(responseBody.errors[4].category).toBe('Invalid value')
-        expect(responseBody.errors[5].category).toBe('Invalid category')
+        expect(errorMessages).toEqual(expect.arrayContaining([
+            'Name is required',
+            'Description is required',
+            'Price is required',
+            'Price must be a number',
+            'Invalid value',
+            'Invalid category'
+        ]))
      })
 
     test('POST /products без авторизации - ожидаем 401', async ({ request }) => {
@@ -159,10 +165,8 @@ test.describe('Негативные тесты для продуктов', () =>
     })
     test('DELETE /products/{productId} с несуществующим ID - ожидаем 404', async ({ request, authToken }) => {
         const invalidProductId = "000000000000000000000000";
-        const formData = createPriceUpdateFormData('100','000000000000000000000000')
 
-        const response = await request.patch(`ecommerce/products/${invalidProductId}`, {
-            multipart: formData,
+        const response = await request.delete(`ecommerce/products/${invalidProductId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` },
         })
         expect(response.status()).toBe(404);
@@ -171,10 +175,8 @@ test.describe('Негативные тесты для продуктов', () =>
     })
     test('DELETE /products/{productId} с невалидным ID - ожидаем 422', async ({ request, authToken }) => {
         const invalidProductId = "00000000000000000000000"; // не хватает одной цифры
-        const formData = createPriceUpdateFormData('100','000000000000000000000000')
 
-        const response = await request.patch(`ecommerce/products/${invalidProductId}`, {
-            multipart: formData,
+        const response = await request.delete(`ecommerce/products/${invalidProductId}`, {
             headers: { 'Authorization': `Bearer ${authToken}` },
         })
         expect(response.status()).toBe(422);

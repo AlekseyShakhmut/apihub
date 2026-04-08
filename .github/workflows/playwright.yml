@@ -44,7 +44,7 @@ jobs:
 
       # запуск тестов для конкретного модуля
       - name: Run tests for ${{ matrix.module }}
-        run: npx playwright test tests/${{ matrix.module }}/ --reporter=html,allure-playwright,list
+        run: npx playwright test api-tests/tests/${{ matrix.module }}/ --reporter=html,allure-playwright,list
         continue-on-error: true  # продолжать выполнение даже если тесты упали (чтобы сохранить отчеты)
 
       # проверка, что allure-results создался и содержит файлы
