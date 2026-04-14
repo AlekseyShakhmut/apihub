@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { faker } from '@faker-js/faker';
 import { generateValidUser } from "../../utils/user_helper";
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -10,9 +9,10 @@ addFormats(ajv);
 
 test.describe.serial('Регистрация и авторизация', () => {
     let registeredUser: any;
+    let userReg: ReturnType<typeof generateValidUser>;
 
     test('Регистрация нового пользователя', async ({ request }) => {
-        const userReg = generateValidUser();
+        userReg = generateValidUser();
 
         const registerRes = await request.post('users/register', {
             data: userReg
@@ -31,7 +31,7 @@ test.describe.serial('Регистрация и авторизация', () => {
         const loginRes = await request.post('users/login', {
             data: {
                 email: registeredUser.email,
-                password: process.env.ADMIN_USER_PASSWORD!
+                password: userReg.password
             }
         });
         expect(loginRes.status()).toBe(200);
