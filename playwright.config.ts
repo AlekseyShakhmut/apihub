@@ -3,6 +3,11 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ debug: false, quiet: true });
 
+const normalizedBaseUrl = (() => {
+  const rawBaseUrl = process.env.API_BASE_URL || 'https://api.freeapi.app/api/v1/';
+  return rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`;
+})();
+
 export default defineConfig({
   testDir: 'api-tests/tests',
   fullyParallel: true,
@@ -19,7 +24,7 @@ export default defineConfig({
     ['list']
   ],
   use: {
-    baseURL: process.env.API_BASE_URL || 'https://api.freeapi.app/api/v1/',
+    baseURL: normalizedBaseUrl,
     trace: 'retain-on-failure',
     extraHTTPHeaders: {
       'accept': 'application/json',

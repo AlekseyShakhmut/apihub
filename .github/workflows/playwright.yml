@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "ADMIN_USER_PASSWORD=${{ secrets.ADMIN_USER_PASSWORD }}" >> .env
           echo "TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}" >> .env
-          echo "API_BASE_URL=https://api.freeapi.app/api/v1" >> .env
+          echo "API_BASE_URL=https://api.freeapi.app/api/v1/" >> .env
 
       # запуск тестов для конкретного модуля
       - name: Run tests for ${{ matrix.module }}
