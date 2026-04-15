@@ -1,18 +1,13 @@
 import { test as base, expect } from '@playwright/test';
 import * as dotenv from 'dotenv';
-import {generateValidUser} from "../utils/user_helper";
+import { generateValidUser, type TestUser } from '../utils/user_helper';
 dotenv.config({debug: false, quiet: true});
 
 
 // Тип для фикстуры
 type AuthFixtures = {
     authToken: string;
-    testUser: {
-        email: string;
-        password: string;
-        username: string;
-        role: string;
-    };
+    testUser: TestUser;
 };
 
 export const test = base.extend<AuthFixtures>({

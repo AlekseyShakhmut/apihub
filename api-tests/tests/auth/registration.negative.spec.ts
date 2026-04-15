@@ -13,7 +13,10 @@ test.describe('Регистрация негативные тесты', () =>{
         registerUser.forEach(({email, expected, errors, description}) => {
             test(`Проверка валидации email - ${description}`, async ({request}) => {
 
-                const registerData = generateValidUser({email:email})
+                const registerData = {
+                    ...generateValidUser(),
+                    email
+                };
 
                 const response = await request.post('users/register', {
                     data: registerData
@@ -43,9 +46,10 @@ test.describe('Регистрация негативные тесты', () =>{
             expect(body.message).toBe('User with email or username already exists');
         })
     test('Регистрация пользователя менее чем с 3 буквами', async ({request}) => {
-        const registerUser = generateValidUser({
-            username: faker.string.alphanumeric(2).toLowerCase(),
-        })
+        const registerUser = {
+            ...generateValidUser(),
+            username: faker.string.alphanumeric(2).toLowerCase()
+        };
         const response_first = await request.post('users/register', {
             data: registerUser
         });
@@ -56,9 +60,10 @@ test.describe('Регистрация негативные тесты', () =>{
         expect(body.errors[0].username).toBe('Username must be at lease 3 characters long');
     })
     test('Регистрация пользователя с именем в верхнем регистре', async ({request}) => {
-        const registerUser = generateValidUser({
+        const registerUser = {
+            ...generateValidUser(),
             username: faker.person.firstName()
-        })
+        };
         const response = await request.post('users/register', {
             data: registerUser
         });
@@ -69,9 +74,10 @@ test.describe('Регистрация негативные тесты', () =>{
         expect(body.errors[0].username).toBe('Username must be lowercase');
     })
     test('Регистрация пользователя без обязательного поля password', async ({request}) => {
-        const registerUser = generateValidUser({
+        const registerUser = {
+            ...generateValidUser(),
             password: undefined
-        })
+        };
         const response = await request.post('users/register', {
             data: registerUser
         });
@@ -82,9 +88,10 @@ test.describe('Регистрация негативные тесты', () =>{
         expect(body.errors[0].password).toBe('Password is required');
     })
     test('Регистрация пользователя с несуществющей ролью', async ({request}) => {
-        const registerUser = generateValidUser({
-            role: "MANAGER",
-        })
+        const registerUser = {
+            ...generateValidUser(),
+            role: 'MANAGER'
+        };
         const response = await request.post('users/register', {
             data: registerUser
         });
