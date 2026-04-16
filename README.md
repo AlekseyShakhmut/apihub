@@ -11,6 +11,21 @@
 - **Ajv** - валидация JSON Schema
 - **Allure** - отчетность
 
+## Установка зависимостей
+
+# Основные пакеты
+npm install --save-dev @playwright/test @faker-js/faker
+
+# Переменные окружения
+npm install --save-dev dotenv @types/dotenv
+
+# JSON Schema валидация
+npm install --save-dev ajv ajv-formats
+
+# Отчеты
+npm install --save-dev allure-playwright
+
+
 ## Структура проекта
 ```
 api-tests/
