@@ -1,7 +1,4 @@
 import { faker } from '@faker-js/faker';
-import * as dotenv from 'dotenv';
-
-dotenv.config({ quiet: true });
 
 export type TestUser = {
     email: string;

@@ -1,7 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import * as dotenv from 'dotenv';
 import { generateValidUser, type TestUser } from '../utils/user_helper';
-dotenv.config({debug: false, quiet: true});
 
 
 // Тип для фикстуры
@@ -34,7 +32,7 @@ export const test = base.extend<AuthFixtures>({
         });
         expect(loginRes.status()).toBe(200);
 
-        const { data } = await loginRes.json();
+        const data = await loginRes.json();
         const token = data.accessToken;
 
         // 3. Передаем токен в тесты
