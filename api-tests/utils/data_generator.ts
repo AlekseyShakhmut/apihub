@@ -27,3 +27,10 @@ export function addItemQuantity() {
         quantity: faker.number.int({ min: 1, max: 30 })
     }
 }
+
+export function generateNewToDo () {
+    return {
+        description: faker.lorem.sentence(),
+        title: faker.lorem.word()
+    }
+}

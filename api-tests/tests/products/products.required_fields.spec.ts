@@ -1,21 +1,9 @@
 import { test, expect } from '../../fixtures/auth_context';
-import {generateCategory, generateProduct} from '../../utils/data_generator';
+import {generateProduct} from '../../utils/data_generator';
 import { createProductFormData } from '../../utils/form_data_helper';
 
 test.describe('Обязательные поля продукта', () => {
-    let categoryId: string;
-
-    test.beforeAll(async ({ request, authToken }) => {
-        const category = generateCategory()
-
-        const categoryRes = await request.post('ecommerce/categories', {
-            data: category,
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        categoryId = (await categoryRes.json()).data._id;
-    });
-
-    test('POST /products без поля name - ожидаем 422', async ({ request, authToken }) => {
+    test('POST /products без поля name - ожидаем 422', async ({ request, authToken, categoryId }) => {
         const product = generateProduct(categoryId);
 
         const formData = createProductFormData({
@@ -36,7 +24,7 @@ test.describe('Обязательные поля продукта', () => {
         expect(body.errors[0].name).toBe('Name is required');
     });
 
-    test('POST /products без поля description - ожидаем 422', async ({ request, authToken }) => {
+    test('POST /products без поля description - ожидаем 422', async ({ request, authToken, categoryId }) => {
         const product = generateProduct(categoryId);
 
         const formData = createProductFormData({
@@ -57,7 +45,7 @@ test.describe('Обязательные поля продукта', () => {
         expect(body.errors[0].description).toBe('Description is required');
     });
 
-    test('POST /products без поля price - ожидаем 422', async ({ request, authToken }) => {
+    test('POST /products без поля price - ожидаем 422', async ({ request, authToken, categoryId }) => {
         const product = generateProduct(categoryId);
 
         const formData = createProductFormData({
@@ -78,7 +66,7 @@ test.describe('Обязательные поля продукта', () => {
         expect(body.errors[0].price).toBe('Price is required');
         expect(body.errors[1].price).toBe('Price must be a number');
     });
-    test('POST /products без поля mainImage - ожидаем 400', async ({ request, authToken }) => {
+    test('POST /products без поля mainImage - ожидаем 400', async ({ request, authToken, categoryId }) => {
         const product = generateProduct(categoryId);
         const response = await request.post('ecommerce/products', {
             multipart: product,

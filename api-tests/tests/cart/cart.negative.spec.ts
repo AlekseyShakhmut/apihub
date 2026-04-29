@@ -1,20 +1,18 @@
 import { test, expect } from '../../fixtures/auth_context';
-import {createCategoryAndProduct} from "../../utils/setup_product";
+import {createProduct} from "../../utils/setup_product";
 import {deleteProductAndCategory} from "../../utils/delete_product";
 import {addItemQuantity} from "../../utils/data_generator";
 
 
 test.describe('Корзина: негативные сценарии', async () => {
-    let categoryId: string;
     let productId: string;
 
-    test.beforeAll(async ({request, authToken}) => {
-        const setup = await createCategoryAndProduct (request, authToken);
-        categoryId = setup.categoryId;
+    test.beforeAll(async ({request, authToken, categoryId}) => {
+        const setup = await createProduct(request, authToken, categoryId);
         productId = setup.productId;
     })
     test.afterAll(async ({request, authToken}) => {
-        await deleteProductAndCategory (request, authToken, productId, categoryId)
+        await deleteProductAndCategory(request, authToken, productId);
     })
 
     const quantityTestCases = [

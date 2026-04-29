@@ -1,11 +1,6 @@
 import { faker } from '@faker-js/faker';
+import {TestUser} from "./types";
 
-export type TestUser = {
-    email: string;
-    password: string;
-    role: string;
-    username: string;
-};
 
 export function generateValidUser(): TestUser {
     return {

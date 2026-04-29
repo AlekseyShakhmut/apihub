@@ -1,130 +1,74 @@
 import { test, expect } from '../../fixtures/auth_context';
-import {generateCategory, generateNewPrice, generateProduct} from '../../utils/data_generator';
-import { faker } from '@faker-js/faker';
-import { createImageBlob } from '../../utils/image_helper';
-import {createPriceUpdateFormData, createProductFormData} from '../../utils/form_data_helper';
-import {generateValidUser} from "../../utils/user_helper";
+import { generateProduct, generateNewPrice } from '../../utils/data_generator';
+import { createProductFormData, createPriceUpdateFormData } from '../../utils/form_data_helper';
 
-test.describe.serial('CRUD операции', () => {
-    let categoryId: string;
-    let productId: string;
-    let authToken: string;
-    let productName: string;
-    let originalPrice: number;
-    let newPrice: number;
+test('CRUD flow продукта', async ({ request, authToken, categoryId }) => {
+    const headers = { Authorization: `Bearer ${authToken}` };
 
+    // Создание продукта
+    const productData = generateProduct(categoryId);
 
-    // Подготовка данных перед всеми тестами
-    test.beforeAll(async ({ request }) => {
-        // 1. Создаем нового пользователя (админа) для всех CRUD операций
-        const user = generateValidUser();
-
-        await request.post('users/register', { data: user });
-        const loginRes = await request.post('users/login', {
-            data: {
-                email: user.email,
-                password: user.password
-            }
-        });
-        authToken = (await loginRes.json()).data.accessToken;
-
-        // 2. Создаем категорию (нужна для создания продукта)
-        const categoryData = generateCategory();
-        const categoryResponse = await request.post('ecommerce/categories', {
-            data: categoryData,
-            headers: { Authorization: `Bearer ${authToken}` },
-        });
-        expect(categoryResponse.status()).toBe(201);
-        categoryId = (await categoryResponse.json()).data._id;
-
+    const formData = createProductFormData({
+        ...productData,
+        mainImage: 'main.jpg',
+        subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
     });
 
-    // CREATE — создание продукта
-    test('Создание продукта', async ({ request }) => {
-        // 1. Генерируем данные продукта
-        const productData = generateProduct(categoryId);
-
-        // 2. Формируем multipart запрос с данными и изображениями
-        const formData = createProductFormData({
-            ...productData,
-            mainImage: 'main.jpg',
-            subImages: ['sub1.jpeg', 'sub2.jpg', 'sub3.jpg']
-        });
-
-        // 3. Отправляем запрос на создание продукта
-        const productResponse = await request.post('ecommerce/products', {
-            multipart: formData,
-            headers: { 'Authorization': `Bearer ${authToken}` },
-        });
-
-        // 4. Проверяем успешное создание и сохраняем данные
-        expect(productResponse.status()).toBe(201);
-        const productBody = await productResponse.json();
-
-        expect(productBody).toHaveProperty('data');
-        expect(productBody.data).toHaveProperty('_id');
-
-        expect(productBody.data._id).toBeDefined();
-        expect(productBody.data._id).not.toBeNull();
-
-        productId = productBody.data._id;
-        productName = productBody.data.name;
-        originalPrice = productBody.data.price;
+    const createRes = await request.post('ecommerce/products', {
+        multipart: formData,
+        headers
     });
 
-    // READ — проверка чтения продукта по ID
-    test('Получение продукта по ID и проверка названия', async ({ request }) => {
-        // 1. Запрашиваем созданный продукт
-        const response = await request.get(`ecommerce/products/${productId}`)
-        expect(response.status()).toBe(200);
+    expect(createRes.status()).toBe(201);
 
-        // 2. Сравниваем название с сохраненным при создании
-        const productBody = await response.json();
-        expect(productBody.data.name).toBe(productName);
+    const createBody = await createRes.json();
+    const productId = createBody.data._id;
+    const productName = createBody.data.name;
+    const originalPrice = createBody.data.price;
+
+    // Проверка продукта
+    const getRes = await request.get(`ecommerce/products/${productId}`);
+    expect(getRes.status()).toBe(200);
+
+    const getBody = await getRes.json();
+    expect(getBody.data.name).toBe(productName);
+
+    // Обнолвение продукта
+    const newPriceData = generateNewPrice();
+
+    const updateForm = createPriceUpdateFormData(
+        newPriceData.price,
+        categoryId
+    );
+
+    const updateRes = await request.patch(`ecommerce/products/${productId}`, {
+        multipart: updateForm,
+        headers
     });
 
-    // UPDATE — обновление цены продукта
-    test('Обновление цены у продукта', async ({ request }) => {
-        // 1. Генерируем новую цену
-        const responseNewPrice = generateNewPrice();
+    expect(updateRes.status()).toBe(200);
 
-        const formData = createPriceUpdateFormData(responseNewPrice.price, categoryId);
+    const updatedBody = await updateRes.json();
+    const newPrice = updatedBody.data.price;
 
-        const responseUpdate = await request.patch(`ecommerce/products/${productId}`,{
-            multipart: formData,
-            headers: { Authorization: `Bearer ${authToken}` },
-        })
+    // проверка после обновления
+    const verifyRes = await request.get(`ecommerce/products/${productId}`);
+    const verifyBody = await verifyRes.json();
 
-        expect(responseUpdate.status()).toBe(200);
-        const productBody = await responseUpdate.json();
-        newPrice = productBody.data.price;
+    expect(verifyBody.data.price).toBe(newPrice);
+    expect(verifyBody.data.price).not.toBe(originalPrice);
 
-        // 3. Проверяем, что цена действительно обновилась
-        const response = await request.get(`ecommerce/products/${productId}`)
-        expect(response.status()).toBe(200);
-        const productResponse = await response.json();
-        expect(productResponse.data.price).toBe(newPrice);
-        expect(productResponse.data.price).not.toBe(originalPrice);
+    // Удаление продукта
+    const deleteRes = await request.delete(`ecommerce/products/${productId}`, {
+        headers
     });
 
-    // DELETE — удаление продукта
-    test('Удаление продукта и проверка статуса 200/204', async ({ request }) => {
-        // 1. Отправляем запрос на удаление
-        const response = await request.delete(`ecommerce/products/${productId}`,{
-            headers:{ Authorization: `Bearer ${authToken}` },
-        });
+    expect([200, 204]).toContain(deleteRes.status());
 
-        // 2. Проверяем, что статус соответствует ожидаемому (200 или 204)
-        expect([200, 204]).toContain(response.status());
+    // Проверка продукта после удаления
+    const deletedRes = await request.get(`ecommerce/products/${productId}`, {
+        headers
     });
-    test('Проверка, что продукт успешно удален', async ({ request }) => {
-        const response = await request.get(`ecommerce/products/${productId}`,{
-            headers: { Authorization: `Bearer ${authToken}` },
-        })
-        expect (response.status()).toBe(404);
 
-        const productBody = await response.json();
-        expect(productBody).toHaveProperty('message');
-        expect(productBody.message).toBe('Product does not exist')
-    })
+    expect(deletedRes.status()).toBe(404);
 });

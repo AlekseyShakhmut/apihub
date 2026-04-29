@@ -1,16 +1,14 @@
 import { test, expect } from "../../fixtures/auth_context";
-import { createCategoryAndProduct } from "../../utils/setup_product";
+import { createProduct } from "../../utils/setup_product";
 import type { SubImage } from '../../utils/types';
 import {deleteProductAndCategory} from "../../utils/delete_product";
 
 test.describe.serial("Проверка возможности удаления доп. изображений", () => {
-    let categoryId: string;
     let productId: string;
     let subImageId: string;
 
-    test.beforeAll(async ({ request, authToken }) => {
-        const setup = await createCategoryAndProduct(request, authToken);
-        categoryId = setup.categoryId;
+    test.beforeAll(async ({ request, authToken, categoryId }) => {
+        const setup = await createProduct(request, authToken, categoryId);
         productId = setup.productId;
         subImageId = setup.subImageId;
 
@@ -18,8 +16,8 @@ test.describe.serial("Проверка возможности удаления �
         expect(setup.subImages.length).toBe(3);
     });
 
-    test.afterAll('Удаление категории и продуктов', async ({ request, authToken }) => {
-        await deleteProductAndCategory(request, authToken,productId, categoryId);
+    test.afterAll('Удаление созданных продуктов', async ({ request, authToken }) => {
+        await deleteProductAndCategory(request, authToken, productId);
     });
 
     test('Удаление одного дополнительного изображения', async ({ request, authToken }) => {

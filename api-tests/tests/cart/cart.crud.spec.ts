@@ -1,109 +1,83 @@
 import { test, expect } from '../../fixtures/auth_context';
-import { createCategoryAndProduct, createProduct } from "../../utils/setup_product";
+import { createProduct } from "../../utils/setup_product";
 import { deleteProductAndCategory } from "../../utils/delete_product";
 import { addItemQuantity } from "../../utils/data_generator";
-import { generateValidUser } from "../../utils/user_helper";
 
-test.describe.serial('Корзина CRUD операции', () => {
-    let authToken: string;
-    let categoryId: string;
-    let productId_1: string;
-    let productName_1: string;
-    let productId_2: string;
-    let productName_2: string;
-    let itemQuantityProduct1: number;
-    let itemQuantityProduct2: number;
-
-    test.beforeAll('Создание категории и двух продуктов', async ({ request }) => {
-        const user = generateValidUser();
-        await request.post('users/register', { data: user });
-        const loginRes = await request.post('users/login', {
-            data: { email: user.email, password: user.password }
-        });
-        authToken = (await loginRes.json()).data.accessToken;
-
-        const setup = await createCategoryAndProduct(request, authToken);
-        categoryId = setup.categoryId;
-        productId_1 = setup.productId;
-        productName_1 = setup.productName;
-
+test.describe('Корзина CRUD операции', () => {
+    test('Flow: добавить товары, проверить корзину, удалить товар и очистить', async ({ request, authToken, categoryId }) => {
+        const firstProduct = await createProduct(request, authToken, categoryId);
         const secondProduct = await createProduct(request, authToken, categoryId);
-        productId_2 = secondProduct.productId;
-        productName_2 = secondProduct.productName;
-    });
+        const productId_1 = firstProduct.productId;
+        const productName_1 = firstProduct.productName;
+        const productId_2 = secondProduct.productId;
+        const productName_2 = secondProduct.productName;
 
-    test.afterAll('Удаление категории и продуктов', async ({ request }) => {
-        await deleteProductAndCategory(request, authToken, [productId_1, productId_2], categoryId);
-    });
-
-    test('Добавить первый продукт в корзину', async ({ request }) => {
+        // Добавляем первый продукт в корзину
         const addItem = addItemQuantity();
-        const answerItem = await request.post(`ecommerce/cart/item/${productId_1}`, {
+        const addFirstResponse = await request.post(`ecommerce/cart/item/${productId_1}`, {
             data: addItem,
             headers: { Authorization: `Bearer ${authToken}` }
         });
-        expect(answerItem.status()).toBe(200);
-        const bodyProduct = await answerItem.json();
-        expect(bodyProduct.data.items.length).toBe(1);
-        expect(bodyProduct.data.items[0].product.name).toBe(productName_1);
-        itemQuantityProduct1 = bodyProduct.data.items[0].quantity;
-    });
+        expect(addFirstResponse.status()).toBe(200);
+        const firstCartState = await addFirstResponse.json();
+        expect(firstCartState.data.items.length).toBe(1);
+        expect(firstCartState.data.items[0].product.name).toBe(productName_1);
+        const itemQuantityProduct1 = firstCartState.data.items[0].quantity;
 
-    test('Добавить второй продукт в корзину', async ({ request }) => {
-        const addItem = addItemQuantity();
-        const answerItem = await request.post(`ecommerce/cart/item/${productId_2}`, {
+        // Добавляем второй продукт в корзину
+        const addSecondResponse = await request.post(`ecommerce/cart/item/${productId_2}`, {
             data: addItem,
             headers: { Authorization: `Bearer ${authToken}` }
         });
-        expect(answerItem.status()).toBe(200);
-        const bodyProduct = await answerItem.json();
-        expect(bodyProduct.data.items.length).toBe(2);
-        expect(bodyProduct.data.items[1].product.name).toBe(productName_2);
-        itemQuantityProduct2 = bodyProduct.data.items[1].quantity;
-    });
+        expect(addSecondResponse.status()).toBe(200);
+        const secondCartState = await addSecondResponse.json();
+        expect(secondCartState.data.items.length).toBe(2);
+        expect(secondCartState.data.items[1].product.name).toBe(productName_2);
+        const itemQuantityProduct2 = secondCartState.data.items[1].quantity;
 
-    test('Проверить содержимое корзины', async ({ request }) => {
-        const response = await request.get('ecommerce/cart', {
+        // Проверяем содержимое корзины
+        const getCartResponse = await request.get('ecommerce/cart', {
             headers: { Authorization: `Bearer ${authToken}` }
         });
-        expect(response.status()).toBe(200);
-        const cart = await response.json();
+        expect(getCartResponse.status()).toBe(200);
+        const cart = await getCartResponse.json();
 
         expect(cart.data.items.length).toBe(2);
         expect(cart.data.items[0].product.name).toBe(productName_1);
         expect(cart.data.items[0].quantity).toBe(itemQuantityProduct1);
         expect(cart.data.items[1].product.name).toBe(productName_2);
         expect(cart.data.items[1].quantity).toBe(itemQuantityProduct2);
-    });
-    test('Удалить один из продуктов из корзины', async ({ request }) => {
-        const response = await request.delete(`ecommerce/cart/item/${productId_2}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        expect(response.status()).toBe(200);
 
-        const getCart = await request.get('ecommerce/cart', {
+        // Удаляем второй продукт и проверяем, что остался один
+        const deleteItemResponse = await request.delete(`ecommerce/cart/item/${productId_2}`, {
             headers: { Authorization: `Bearer ${authToken}` }
         });
-        const cart = await getCart.json();
+        expect(deleteItemResponse.status()).toBe(200);
 
-        expect(cart.data.items.length).toBe(1);
-        expect(cart.data.items[0].product.name).toBe(productName_1);
-        expect(cart.data.items[0].quantity).toBe(itemQuantityProduct1);
-    });
-    test('Очистка корзины', async ({ request }) => {
-        const response = await request.delete('ecommerce/cart/clear', {
+        const getCartAfterDeleteResponse = await request.get('ecommerce/cart', {
             headers: { Authorization: `Bearer ${authToken}` }
         });
-        expect(response.status()).toBe(200);
-        const bodyCart = await response.json();
+        const cartAfterDelete = await getCartAfterDeleteResponse.json();
+
+        expect(cartAfterDelete.data.items.length).toBe(1);
+        expect(cartAfterDelete.data.items[0].product.name).toBe(productName_1);
+        expect(cartAfterDelete.data.items[0].quantity).toBe(itemQuantityProduct1);
+
+        // Очищаем корзину
+        const clearCartResponse = await request.delete('ecommerce/cart/clear', {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+        expect(clearCartResponse.status()).toBe(200);
+        const bodyCart = await clearCartResponse.json();
         expect(bodyCart.data.items.length).toBe(0);
         expect(bodyCart.message).toBe('Cart has been cleared');
 
-        const getCart = await request.get('ecommerce/cart', {
+        const getCartAfterClearResponse = await request.get('ecommerce/cart', {
             headers: { Authorization: `Bearer ${authToken}` }
         });
-        const cart = await getCart.json();
-        expect(cart.data.items.length).toBe(0);
-        expect(cart.message).toBe('Cart fetched successfully');
+        const cartAfterClear = await getCartAfterClearResponse.json();
+        expect(cartAfterClear.data.items.length).toBe(0);
+        expect(cartAfterClear.message).toBe('Cart fetched successfully');
+        await deleteProductAndCategory(request, authToken, [productId_1, productId_2]);
     });
 });

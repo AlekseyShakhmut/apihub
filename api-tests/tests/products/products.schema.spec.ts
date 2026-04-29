@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/auth_context';
-import {generateCategory, generateNewPrice, generateProduct} from '../../utils/data_generator';
+import {generateCategory, generateNewPrice} from '../../utils/data_generator';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import {
@@ -8,28 +8,45 @@ import {
     productSchema,
     removeSubImageResponseSchema
 } from '../../utils/schemas';
-import {createPriceUpdateFormData, createProductFormData} from "../../utils/form_data_helper";
-import {createCategoryAndProduct, createProduct} from "../../utils/setup_product";
-import {deleteCategoryOnly} from "../../utils/delete_product";
+import {createPriceUpdateFormData} from "../../utils/form_data_helper";
+import {createProduct} from "../../utils/setup_product";
+import { generateValidUser } from "../../utils/user_helper";
 
 const ajv = new Ajv();
 addFormats(ajv);
 
 test.describe.serial('JSON Schema валидация', () => {
+    let authToken: string;
     let categoryId: string;
     let productId: string;
     let createdProduct: any;
     let subImageId: string;
 
-    test.beforeAll(async ({ request, authToken }) => {
-        const setup = await createCategoryAndProduct(request, authToken);
-        categoryId = setup.categoryId;
-    })
-    test.afterAll('Удаление категории', async ({request, authToken}) => {
-        await deleteCategoryOnly(request,authToken,categoryId);
-    })
+    test.beforeAll(async ({ request }) => {
+        const user = generateValidUser();
+        await request.post('users/register', { data: user });
+        const loginRes = await request.post('users/login', {
+            data: {
+                password: user.password,
+                username: user.username
+            }
+        });
+        authToken = (await loginRes.json()).data.accessToken;
 
-    test('POST /products - ответ должен соответствовать схеме', async ({ request, authToken }) => {
+        const categoryRes = await request.post('ecommerce/categories', {
+            data: generateCategory(),
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+        categoryId = (await categoryRes.json()).data._id;
+    });
+
+    test.afterAll(async ({ request }) => {
+        await request.delete(`ecommerce/categories/${categoryId}`, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        });
+    });
+
+    test('POST /products - ответ должен соответствовать схеме', async ({ request }) => {
         const product = await createProduct(request, authToken, categoryId);
         createdProduct = product.fullProduct;
         productId = product.productId;
@@ -51,7 +68,7 @@ test.describe.serial('JSON Schema валидация', () => {
         expect(valid).toBe(true);
     });
 
-    test('PATCH /products/{id} - ответ должен соответствовать схеме', async ({ request, authToken }) => {
+    test('PATCH /products/{id} - ответ должен соответствовать схеме', async ({ request }) => {
         // Обновляем продукт
         const responseNewPrice = generateNewPrice();
 
@@ -85,7 +102,7 @@ test.describe.serial('JSON Schema валидация', () => {
         const valid = validate(bodyCategoryProduct);
         expect(valid).toBe(true);
     });
-    test(' PATCH /products/remove/subimage/{productId}/{subImageId}- ответ должен соответствовать схеме', async ({ request, authToken }) => {
+    test(' PATCH /products/remove/subimage/{productId}/{subImageId}- ответ должен соответствовать схеме', async ({ request }) => {
         const responseDelete = await request.patch(`ecommerce/products/remove/subimage/${productId}/${subImageId}`, {
             headers: { Authorization: `Bearer ${authToken}` }
         });
@@ -98,7 +115,7 @@ test.describe.serial('JSON Schema валидация', () => {
         expect(valid).toBe(true);
 
     });
-    test('DELETE /products/{id} - ответ должен соответствовать схеме', async ({ request, authToken }) => {
+    test('DELETE /products/{id} - ответ должен соответствовать схеме', async ({ request }) => {
         const response = await request.delete(`ecommerce/products/${productId}`, {
             headers: { Authorization: `Bearer ${authToken}` }
         });

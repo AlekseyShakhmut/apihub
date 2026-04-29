@@ -1,7 +1,6 @@
 import { test, expect } from '../../fixtures/auth_context';
-import { createCategoryAndProduct } from "../../utils/setup_product";
+import { createProduct } from "../../utils/setup_product";
 import { addItemQuantity } from "../../utils/data_generator";
-import { generateValidUser } from "../../utils/user_helper";
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { cartSchema} from '../../utils/schemas';
@@ -10,31 +9,14 @@ const ajv = new Ajv();
 addFormats(ajv);
 
 test.describe.serial('Cart - JSON Schema validation', () => {
-    let authToken: string;
-    let categoryId: string;
     let productId: string;
 
-    test.beforeAll(async ({ request }) => {
-        const user = generateValidUser();
-        await request.post('users/register', { data: user });
-        const loginRes = await request.post('users/login', {
-            data: { email: user.email, password: user.password }
-        });
-        authToken = (await loginRes.json()).data.accessToken;
-
-        const setup = await createCategoryAndProduct(request, authToken);
-        categoryId = setup.categoryId;
+    test.beforeAll(async ({ request, authToken, categoryId }) => {
+        const setup = await createProduct(request, authToken, categoryId);
         productId = setup.productId;
-
     });
 
-    test.afterAll(async ({ request }) => {
-        await request.delete(`ecommerce/categories/${categoryId}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-    });
-
-    test('POST /cart/item - ответ должен соответствовать схеме', async ({ request }) => {
+    test('POST /cart/item - ответ должен соответствовать схеме', async ({ request, authToken }) => {
         const addItem = addItemQuantity();
         const response = await request.post(`ecommerce/cart/item/${productId}`, {
             data: addItem,
@@ -48,7 +30,7 @@ test.describe.serial('Cart - JSON Schema validation', () => {
         expect(validate(body.data)).toBe(true);
     });
 
-    test('GET /cart - ответ должен соответствовать схеме', async ({ request }) => {
+    test('GET /cart - ответ должен соответствовать схеме', async ({ request, authToken }) => {
         // сначала добавим товар
         await request.post(`ecommerce/cart/item/${productId}`, {
             data: addItemQuantity(),
