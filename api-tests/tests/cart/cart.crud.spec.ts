@@ -7,6 +7,7 @@ test.describe('Корзина CRUD операции', () => {
     test('Flow: добавить товары, проверить корзину, удалить товар и очистить', async ({ request, authToken, categoryId }) => {
         const firstProduct = await createProduct(request, authToken, categoryId);
         const secondProduct = await createProduct(request, authToken, categoryId);
+        const headers = { Authorization: `Bearer ${authToken}` };
         const productId_1 = firstProduct.productId;
         const productName_1 = firstProduct.productName;
         const productId_2 = secondProduct.productId;
@@ -16,7 +17,7 @@ test.describe('Корзина CRUD операции', () => {
         const addItem = addItemQuantity();
         const addFirstResponse = await request.post(`ecommerce/cart/item/${productId_1}`, {
             data: addItem,
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         expect(addFirstResponse.status()).toBe(200);
         const firstCartState = await addFirstResponse.json();
@@ -27,7 +28,7 @@ test.describe('Корзина CRUD операции', () => {
         // Добавляем второй продукт в корзину
         const addSecondResponse = await request.post(`ecommerce/cart/item/${productId_2}`, {
             data: addItem,
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         expect(addSecondResponse.status()).toBe(200);
         const secondCartState = await addSecondResponse.json();
@@ -37,7 +38,7 @@ test.describe('Корзина CRUD операции', () => {
 
         // Проверяем содержимое корзины
         const getCartResponse = await request.get('ecommerce/cart', {
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         expect(getCartResponse.status()).toBe(200);
         const cart = await getCartResponse.json();
@@ -50,12 +51,12 @@ test.describe('Корзина CRUD операции', () => {
 
         // Удаляем второй продукт и проверяем, что остался один
         const deleteItemResponse = await request.delete(`ecommerce/cart/item/${productId_2}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         expect(deleteItemResponse.status()).toBe(200);
 
         const getCartAfterDeleteResponse = await request.get('ecommerce/cart', {
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         const cartAfterDelete = await getCartAfterDeleteResponse.json();
 
@@ -65,7 +66,7 @@ test.describe('Корзина CRUD операции', () => {
 
         // Очищаем корзину
         const clearCartResponse = await request.delete('ecommerce/cart/clear', {
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         expect(clearCartResponse.status()).toBe(200);
         const bodyCart = await clearCartResponse.json();
@@ -73,7 +74,7 @@ test.describe('Корзина CRUD операции', () => {
         expect(bodyCart.message).toBe('Cart has been cleared');
 
         const getCartAfterClearResponse = await request.get('ecommerce/cart', {
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers
         });
         const cartAfterClear = await getCartAfterClearResponse.json();
         expect(cartAfterClear.data.items.length).toBe(0);
