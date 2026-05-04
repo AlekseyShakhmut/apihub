@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import {generateValidUser} from "../../utils/user_helper";
+import { generateValidUser } from '../../utils/user_helper';
+import { registerUser } from '../../utils/auth_flow';
 
 const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || process.env.ADMIN_USER_PASSWORD || 'Qwerty123!';
 
@@ -9,10 +10,7 @@ test.describe('Авторизация негативные тесты', () => {
     test.beforeAll(async ({ request }) => {
 
         const user = generateValidUser();
-
-        const registerRes = await request.post('users/register', {
-            data: user
-        });
+        const registerRes = await registerUser(request, user);
         expect(registerRes.status()).toBe(201);
         const body = await registerRes.json();
         username = body.data.user.username;

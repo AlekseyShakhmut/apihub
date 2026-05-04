@@ -1,5 +1,7 @@
-import { test, expect } from '../../fixtures/auth_context';
-import {generateCategory, generateNewPrice} from '../../utils/data_generator';
+import { test, expect } from '@playwright/test';
+import { generateNewPrice } from '../../utils/data_generator';
+import { registerAndLoginWithUsername } from '../../utils/auth_flow';
+import { createEcommerceCategory } from '../../utils/category_flow';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import {
@@ -24,20 +26,9 @@ test.describe.serial('JSON Schema валидация', () => {
 
     test.beforeAll(async ({ request }) => {
         const user = generateValidUser();
-        await request.post('users/register', { data: user });
-        const loginRes = await request.post('users/login', {
-            data: {
-                password: user.password,
-                username: user.username
-            }
-        });
-        authToken = (await loginRes.json()).data.accessToken;
-
-        const categoryRes = await request.post('ecommerce/categories', {
-            data: generateCategory(),
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        categoryId = (await categoryRes.json()).data._id;
+        const { accessToken } = await registerAndLoginWithUsername(request, user);
+        authToken = accessToken;
+        categoryId = await createEcommerceCategory(request, authToken);
     });
 
     test.afterAll(async ({ request }) => {

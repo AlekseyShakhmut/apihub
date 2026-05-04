@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/auth_context';
+import { test, expect } from '../../fixtures/auth_ecommerce';
 import {createProduct} from "../../utils/setup_product";
 import {deleteProductAndCategory} from "../../utils/delete_product";
 import {addItemQuantity} from "../../utils/data_generator";

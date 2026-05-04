@@ -1,4 +1,4 @@
-import {test, expect} from "../../fixtures/auth_context"
+import { test, expect } from '../../fixtures/auth';
 
 test.describe('Crud операции со списком дел', () => {
 

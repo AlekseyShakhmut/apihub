@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/auth_context';
+import { test, expect } from '../../fixtures/auth_ecommerce';
 import { createProduct } from "../../utils/setup_product";
 import { deleteProductAndCategory } from "../../utils/delete_product";
 import { addItemQuantity } from "../../utils/data_generator";
@@ -58,8 +58,8 @@ test.describe('Корзина CRUD операции', () => {
         const getCartAfterDeleteResponse = await request.get('ecommerce/cart', {
             headers
         });
+        expect(getCartAfterDeleteResponse.status()).toBe(200);
         const cartAfterDelete = await getCartAfterDeleteResponse.json();
-
         expect(cartAfterDelete.data.items.length).toBe(1);
         expect(cartAfterDelete.data.items[0].product.name).toBe(productName_1);
         expect(cartAfterDelete.data.items[0].quantity).toBe(itemQuantityProduct1);
@@ -76,6 +76,7 @@ test.describe('Корзина CRUD операции', () => {
         const getCartAfterClearResponse = await request.get('ecommerce/cart', {
             headers
         });
+        expect(getCartAfterClearResponse.status()).toBe(200);
         const cartAfterClear = await getCartAfterClearResponse.json();
         expect(cartAfterClear.data.items.length).toBe(0);
         expect(cartAfterClear.message).toBe('Cart fetched successfully');

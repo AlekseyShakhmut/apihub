@@ -1,8 +1,9 @@
-import {test, expect} from "../../fixtures/auth_context";
-import {createProduct} from "../../utils/setup_product";
-import {deleteProductAndCategory} from "../../utils/delete_product";
-import { generateValidUser } from "../../utils/user_helper";
-import { generateCategory } from "../../utils/data_generator";
+import { test, expect } from '@playwright/test';
+import { createProduct } from '../../utils/setup_product';
+import { deleteProductAndCategory } from '../../utils/delete_product';
+import { generateValidUser } from '../../utils/user_helper';
+import { registerAndLoginWithUsername } from '../../utils/auth_flow';
+import { createEcommerceCategory } from '../../utils/category_flow';
 
 test.describe.serial("Проверка информации о товаре на основе категории, к которой он относится", () => {
     let authToken: string;
@@ -11,22 +12,11 @@ test.describe.serial("Проверка информации о товаре на
     let productName: string;
     let productPrice: number;
 
-    test.beforeAll('Создание пользователя, категории и продукта', async ({request}) => {
+    test.beforeAll('Создание пользователя, категории и продукта', async ({ request }) => {
         const user = generateValidUser();
-        await request.post('users/register', { data: user });
-        const loginRes = await request.post('users/login', {
-            data: {
-                password: user.password,
-                username: user.username
-            }
-        });
-        authToken = (await loginRes.json()).data.accessToken;
-
-        const categoryRes = await request.post('ecommerce/categories', {
-            data: generateCategory(),
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        categoryId = (await categoryRes.json()).data._id;
+        const { accessToken } = await registerAndLoginWithUsername(request, user);
+        authToken = accessToken;
+        categoryId = await createEcommerceCategory(request, authToken);
 
         const setup = await createProduct(request, authToken, categoryId);
         productId = setup.productId;

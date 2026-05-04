@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/auth_context';
+import { test, expect } from '../../fixtures/auth_ecommerce';
 import { generateProduct, generateNewPrice } from '../../utils/data_generator';
 import { createProductFormData, createPriceUpdateFormData } from '../../utils/form_data_helper';
 

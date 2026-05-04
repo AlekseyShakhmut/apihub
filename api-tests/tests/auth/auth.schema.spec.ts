@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { generateValidUser } from "../../utils/user_helper";
+import { generateValidUser } from '../../utils/user_helper';
+import { registerUser, loginUser, parseAccessToken } from '../../utils/auth_flow';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { registerResponseSchema, loginResponseSchema, userSchema } from '../../utils/schemas';
@@ -14,9 +15,7 @@ test.describe.serial('Регистрация и авторизация', () => {
     test('Регистрация нового пользователя', async ({ request }) => {
         userReg = generateValidUser();
 
-        const registerRes = await request.post('users/register', {
-            data: userReg
-        });
+        const registerRes = await registerUser(request, userReg);
         expect(registerRes.status()).toBe(201);
 
         const registerData = await registerRes.json();
@@ -28,11 +27,9 @@ test.describe.serial('Регистрация и авторизация', () => {
     });
 
     test('Логин и получение токена', async ({ request }) => {
-        const loginRes = await request.post('users/login', {
-            data: {
-                email: registeredUser.email,
-                password: userReg.password
-            }
+        const loginRes = await loginUser(request, {
+            email: registeredUser.email,
+            password: userReg.password
         });
         expect(loginRes.status()).toBe(200);
 
@@ -42,7 +39,7 @@ test.describe.serial('Регистрация и авторизация', () => {
         const validateLogin = ajv.compile(loginResponseSchema);
         expect(validateLogin(loginData.data)).toBe(true);
 
-        const token = loginData.data.accessToken;
+        const token = parseAccessToken(loginData);
 
         // Защищенный запрос
         const protectedRes = await request.get('users/current-user', {

@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/auth_context';  // для тестов с токеном
+import { test, expect } from '../../fixtures/auth';
 import { faker } from '@faker-js/faker';
 import {createBaseProductFormData, createPriceUpdateFormData,} from "../../utils/form_data_helper";
 
